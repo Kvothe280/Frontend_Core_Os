@@ -1,0 +1,52 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+  background-color: #f7f3ee !important;
+  color: #3b2a1d;
+}
+
+.decrypt-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(20, 14, 10, 0.72);
+  backdrop-filter: blur(8px);
+}
+
+.decrypt-box {
+  width: min(520px, 90vw);
+  padding: 28px;
+  border: 1px solid #6f4e37;
+  color: #f7f3ee;
+  font-family: "IBM Plex Mono", monospace;
+  background: #1a120e;
+}
+
+.decrypt-bar {
+  height: 6px;
+  margin-top: 16px;
+  overflow: hidden;
+  background: #3b2a1d;
+}
+
+.decrypt-bar span {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: #c4a574;
+  animation: decryptFill 2.4s ease forwards;
+}
+
+@keyframes decryptFill {
+  to {
+    width: 100%;
+  }
+}
