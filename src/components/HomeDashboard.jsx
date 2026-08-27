@@ -155,18 +155,21 @@ export default function HomeDashboard({ tick, usuario, onEstado, onOpenCartas, o
       <Typography color="text.secondary" sx={{ mb: 2 }}>
         Cuatro mensuales solo para ti, más uno cifrado especial. Los mensuales se renuevan cada mes.
       </Typography>
+      {/* Vale cifrado: siempre al tope — compacto cuando ya está usado */}
+      <Box sx={{ mb: 1.5 }}>
+        <ValeCifradoCard />
+      </Box>
       <Box
         sx={{
           display: 'grid',
           gap: 2,
-          gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', lg: 'repeat(5, 1fr)' },
+          gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', lg: 'repeat(4, 1fr)' },
           mb: 4,
         }}
       >
         {(data.valesMensuales || []).map((vale) => (
           <ValeCard key={vale._id} vale={vale} onOpen={() => setValeSel(vale)} />
         ))}
-        <ValeCifradoCard />
       </Box>
 
       {/* Recuerdos recientes */}

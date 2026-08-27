@@ -114,6 +114,7 @@ export default function ValeCifradoCard() {
 
   const abierto = estado.desbloqueado || recompensaReveal;
   const recompensa = recompensaReveal || estado.recompensa;
+  const sinPreguntas = !abierto && (!estado.preguntas || estado.preguntas.length === 0);
 
   const mesSiguiente = () => {
     const d = new Date();
@@ -121,12 +122,45 @@ export default function ValeCifradoCard() {
       .toLocaleDateString('es-MX', { day: 'numeric', month: 'long' });
   };
 
+  // Cuando ya fue desbloqueado: tarjeta compacta y apagada para no cortar la fila de vales
+  if (abierto) {
+    return (
+      <Card
+        sx={{
+          border: `1px solid ${theme.palette.divider}`,
+          background: theme.palette.background.paper,
+          opacity: 0.72,
+          overflow: 'hidden',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1.5,
+          px: 2,
+          py: 1.5,
+          minHeight: 72,
+        }}
+      >
+        <LockOpenIcon sx={{ fontSize: 24, color: 'text.disabled', flexShrink: 0 }} />
+        <Box sx={{ minWidth: 0 }}>
+          <Typography variant="overline" sx={{ color: 'text.disabled', lineHeight: 1.2 }}>
+            cifrado · este mes
+          </Typography>
+          <Typography variant="body2" noWrap sx={{ fontWeight: 600 }}>
+            {recompensa}
+          </Typography>
+          <Typography variant="caption" color="text.disabled">
+            Se renueva el {mesSiguiente()}
+          </Typography>
+        </Box>
+      </Card>
+    );
+  }
+
   return (
     <>
       <Card
         sx={{
-          border: abierto ? `1.5px solid ${theme.palette.primary.main}` : `1px dashed ${theme.palette.primary.main}73`,
-          background: abierto ? '#fff' : '#efe8df',
+          border: `1px dashed ${theme.palette.primary.main}73`,
+          background: theme.palette.background.default,
           overflow: 'hidden',
           transition: 'all 0.3s ease',
         }}
@@ -137,40 +171,28 @@ export default function ValeCifradoCard() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            bgcolor: abierto ? '#ebe2d6' : '#ddd4c5',
+            bgcolor: theme.palette.divider,
           }}
         >
-          {abierto ? (
-            <LockOpenIcon sx={{ fontSize: 48, color: 'primary.main' }} />
-          ) : (
-            <LockIcon sx={{ fontSize: 48, color: 'rgba(111,78,55,0.5)' }} />
-          )}
+          <LockIcon sx={{ fontSize: 48, color: theme.palette.primary.main, opacity: 0.45 }} />
         </Box>
         <Box sx={{ p: 2 }}>
           <Typography variant="overline" sx={{ color: 'primary.main' }}>
-            {abierto ? 'Desbloqueado · especial' : 'Cifrado · especial'}
+            Cifrado · especial
           </Typography>
-          <Typography variant="h6">
-            {abierto ? recompensa : 'Vale cifrado del mes'}
-          </Typography>
-          {!abierto && (
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, mb: 1.5 }}>
-              5 preguntas para abrirlo
+          <Typography variant="h6">Vale cifrado del mes</Typography>
+          {sinPreguntas ? (
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+              Sin preguntas cargadas aún.
             </Typography>
-          )}
-          {!abierto && (
-            <Button size="small" variant="outlined" onClick={() => setDialogOpen(true)}>
-              Intentar desbloquear
-            </Button>
-          )}
-          {abierto && (
+          ) : (
             <>
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                Este mes ya está tuyo.
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, mb: 1.5 }}>
+                {estado.preguntas.length} pregunta{estado.preguntas.length !== 1 ? 's' : ''} para abrirlo
               </Typography>
-              <Typography variant="caption" color="text.secondary">
-                Se renueva el {mesSiguiente()}
-              </Typography>
+              <Button size="small" variant="outlined" onClick={() => setDialogOpen(true)}>
+                Intentar desbloquear
+              </Button>
             </>
           )}
         </Box>
