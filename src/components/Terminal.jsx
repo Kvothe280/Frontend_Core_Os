@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useTheme } from '@mui/material/styles';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -12,7 +13,27 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import { api } from '../api';
 
-const mono = { fontFamily: '"IBM Plex Mono", "Courier New", monospace', color: '#7CFF9A' };
+const MONO_FONT = '"IBM Plex Mono", "Courier New", monospace';
+
+// Esquemas de color de la terminal por usuario
+const TC = {
+  enrique: {
+    bg: '#0B0A12',                        // casi negro con tinte violeta
+    text: '#A8B4F0',                      // French Blue claro
+    input: '#C4CAFE',                     // más claro para el prompt
+    border: '#3E4B8E',                    // French Blue
+    glow: 'rgba(62, 75, 142, 0.22)',
+    adminTitle: '#A8B4F0',
+  },
+  karol: {
+    bg: '#120A05',                        // casi negro con tinte cálido
+    text: '#F4C896',                      // ámbar cálido / Canyon claro
+    input: '#FAD9B6',                     // más claro
+    border: '#DF6D41',                    // Canyon
+    glow: 'rgba(223, 109, 65, 0.18)',
+    adminTitle: '#DF6D41',
+  },
+};
 
 const AYUDA = [
   '> Comandos disponibles:',
@@ -208,6 +229,9 @@ function PanelAdmin() {
 // ── Terminal principal ─────────────────────────────────────────────────────
 
 export default function Terminal({ usuario, onEstado, onUnlock }) {
+  const theme = useTheme();
+  const tc = TC[usuario] || TC.enrique;
+  const mono = { fontFamily: MONO_FONT, color: tc.text };
   const [enigma, setEnigma] = useState(null);
   const [logs, setLogs] = useState([]);
   const [input, setInput] = useState('');
@@ -412,31 +436,31 @@ export default function Terminal({ usuario, onEstado, onUnlock }) {
       </Typography>
 
       <Box sx={{ display: 'flex', gap: 1, mb: 1.5 }}>
-        <Chip label={`modo: ${mode}`} size="small" sx={{ bgcolor: mode === 'cifrado' ? 'primary.main' : '#ebe2d6', color: mode === 'cifrado' ? '#fff' : 'primary.main' }} />
+        <Chip label={`modo: ${mode}`} size="small" sx={{ bgcolor: mode === 'cifrado' ? tc.border : `${tc.border}18`, color: mode === 'cifrado' ? '#fff' : tc.text, fontFamily: MONO_FONT, fontSize: 11 }} />
         {enigma && !enigma.bloqueado && !enigma.pendienteConfiguracion && (
           <Chip label={`${enigma.enigmasResueltos ?? 0}/6 enigmas`} size="small" variant="outlined" />
         )}
       </Box>
 
-      <Box sx={{ border: '1px solid #2f7a45', borderRadius: 2, overflow: 'hidden' }}>
+      <Box sx={{ border: `1px solid ${tc.border}`, borderRadius: 2, overflow: 'hidden' }}>
         {mode === 'admin' ? (
-          <Box sx={{ bgcolor: '#fff', p: 2, maxHeight: 520, overflowY: 'auto' }}>
-            <Typography variant="subtitle2" sx={{ mb: 2, color: '#2f7a45' }}>
-              ⚙ Panel de administración — {usuario}
+          <Box sx={{ bgcolor: theme.palette.background.paper, p: 2, maxHeight: 520, overflowY: 'auto' }}>
+            <Typography sx={{ mb: 2, fontFamily: MONO_FONT, fontSize: 12, color: tc.adminTitle }}>
+              ⚙ admin — {usuario}
             </Typography>
             <PanelAdmin />
           </Box>
         ) : (
-          <Box sx={{ backgroundColor: '#070807', p: 2, minHeight: 380, boxShadow: 'inset 0 0 40px rgba(0, 40, 12, 0.45)' }}>
+          <Box sx={{ backgroundColor: tc.bg, p: 2, minHeight: 380, boxShadow: `inset 0 0 50px ${tc.glow}` }}>
             {logs.map((line, i) => (
-              <Typography key={`${i}-${line}`} sx={{ ...mono, fontSize: 14, whiteSpace: 'pre-wrap' }}>
+              <Typography key={`${i}-${line}`} sx={{ ...mono, fontSize: 13.5, lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>
                 {line}
               </Typography>
             ))}
             <div ref={endRef} />
           </Box>
         )}
-        <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', gap: 1, p: 2, bgcolor: '#070807', borderTop: '1px solid #2f7a45' }}>
+        <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', gap: 1, p: 1.5, bgcolor: tc.bg, borderTop: `1px solid ${tc.border}40` }}>
           <TextField
             fullWidth
             size="small"
@@ -445,9 +469,9 @@ export default function Terminal({ usuario, onEstado, onUnlock }) {
             onChange={(e) => setInput(e.target.value)}
             autoComplete="off"
             disabled={!inputActivo}
-            InputProps={{ sx: { ...mono, '& input': { color: '#7CFF9A' }, '& fieldset': { borderColor: '#2f7a45' } } }}
+            InputProps={{ sx: { fontFamily: MONO_FONT, fontSize: 13.5, '& input': { color: tc.input }, '& fieldset': { borderColor: `${tc.border}60` }, '&:hover fieldset': { borderColor: tc.border }, '&.Mui-focused fieldset': { borderColor: tc.border } } }}
           />
-          <Button type="submit" variant="outlined" disabled={!inputActivo} sx={{ ...mono, borderColor: '#7CFF9A' }}>
+          <Button type="submit" variant="outlined" disabled={!inputActivo} sx={{ fontFamily: MONO_FONT, fontSize: 12, borderColor: `${tc.border}60`, color: tc.text, '&:hover': { borderColor: tc.border, bgcolor: `${tc.border}12` } }}>
             ENTER
           </Button>
         </Box>
