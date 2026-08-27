@@ -442,40 +442,49 @@ export default function Terminal({ usuario, onEstado, onUnlock }) {
         )}
       </Box>
 
+      {/* Recuadro negro — siempre logs, nunca formularios */}
       <Box sx={{ border: `1px solid ${tc.border}`, borderRadius: 2, overflow: 'hidden' }}>
-        {mode === 'admin' ? (
-          <Box sx={{ bgcolor: theme.palette.background.paper, p: 2, maxHeight: 520, overflowY: 'auto' }}>
-            <Typography sx={{ mb: 2, fontFamily: MONO_FONT, fontSize: 12, color: tc.adminTitle }}>
-              ⚙ admin — {usuario}
+        <Box sx={{ backgroundColor: tc.bg, p: 2, minHeight: 340, boxShadow: `inset 0 0 50px ${tc.glow}` }}>
+          {logs.map((line, i) => (
+            <Typography key={`${i}-${line}`} sx={{ ...mono, fontSize: 13.5, lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>
+              {line}
             </Typography>
-            <PanelAdmin />
-          </Box>
-        ) : (
-          <Box sx={{ backgroundColor: tc.bg, p: 2, minHeight: 380, boxShadow: `inset 0 0 50px ${tc.glow}` }}>
-            {logs.map((line, i) => (
-              <Typography key={`${i}-${line}`} sx={{ ...mono, fontSize: 13.5, lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>
-                {line}
-              </Typography>
-            ))}
-            <div ref={endRef} />
+          ))}
+          <div ref={endRef} />
+        </Box>
+        {mode !== 'admin' && (
+          <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', gap: 1, p: 1.5, bgcolor: tc.bg, borderTop: `1px solid ${tc.border}40` }}>
+            <TextField
+              fullWidth size="small" placeholder={placeholder} value={input}
+              onChange={(e) => setInput(e.target.value)} autoComplete="off" disabled={!inputActivo}
+              InputProps={{ sx: { fontFamily: MONO_FONT, fontSize: 13.5, '& input': { color: tc.input }, '& fieldset': { borderColor: `${tc.border}60` }, '&:hover fieldset': { borderColor: tc.border }, '&.Mui-focused fieldset': { borderColor: tc.border } } }}
+            />
+            <Button type="submit" variant="outlined" disabled={!inputActivo}
+              sx={{ fontFamily: MONO_FONT, fontSize: 12, borderColor: `${tc.border}60`, color: tc.text, '&:hover': { borderColor: tc.border, bgcolor: `${tc.border}12` } }}>
+              ENTER
+            </Button>
           </Box>
         )}
-        <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', gap: 1, p: 1.5, bgcolor: tc.bg, borderTop: `1px solid ${tc.border}40` }}>
-          <TextField
-            fullWidth
-            size="small"
-            placeholder={placeholder}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            autoComplete="off"
-            disabled={!inputActivo}
-            InputProps={{ sx: { fontFamily: MONO_FONT, fontSize: 13.5, '& input': { color: tc.input }, '& fieldset': { borderColor: `${tc.border}60` }, '&:hover fieldset': { borderColor: tc.border }, '&.Mui-focused fieldset': { borderColor: tc.border } } }}
-          />
-          <Button type="submit" variant="outlined" disabled={!inputActivo} sx={{ fontFamily: MONO_FONT, fontSize: 12, borderColor: `${tc.border}60`, color: tc.text, '&:hover': { borderColor: tc.border, bgcolor: `${tc.border}12` } }}>
-            ENTER
-          </Button>
-        </Box>
       </Box>
+
+      {/* Panel admin — fuera del recuadro negro, solo visible en modo admin */}
+      {mode === 'admin' && (
+        <Box sx={{ mt: 2, border: `1px solid ${tc.border}30`, borderRadius: 2, overflow: 'hidden' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 2, py: 1.5, bgcolor: tc.bg, borderBottom: `1px solid ${tc.border}30` }}>
+            <Typography sx={{ fontFamily: MONO_FONT, fontSize: 12, color: tc.adminTitle }}>
+              ⚙ admin — {usuario}
+            </Typography>
+            <Button size="small" onClick={() => { setMode('enigma'); pushLog('[admin] Panel cerrado. Volviendo al protocolo.'); }}
+              sx={{ fontFamily: MONO_FONT, fontSize: 11, color: tc.text, borderColor: `${tc.border}60`, '&:hover': { borderColor: tc.border } }}
+              variant="outlined">
+              cerrar
+            </Button>
+          </Box>
+          <Box sx={{ p: 2, bgcolor: theme.palette.background.paper, maxHeight: 560, overflowY: 'auto' }}>
+            <PanelAdmin usuario={usuario} />
+          </Box>
+        </Box>
+      )}
     </Box>
   );
 }
