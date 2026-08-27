@@ -310,7 +310,15 @@ export default function Terminal({ usuario, onEstado, onUnlock }) {
       return;
     }
 
-    if (mode === 'admin') return; // en modo admin solo 'salir' funciona
+    if (mode === 'admin') return;
+
+    // Enigma sin cargar — informar sin llamar al backend
+    if (mode === 'enigma' && !enigma?.activo) {
+      if (enigma?.bloqueado) pushLog('⛔ Terminal bloqueada. Usa [admin] para gestionar o [2] para el vale cifrado.');
+      else if (enigma?.pendienteConfiguracion) pushLog('⚙ Aún no hay enigmas cargados. Usa [admin] para agregarlos.');
+      else pushLog('Protocolo completo. La Bóveda está abierta.');
+      return;
+    }
 
     // Modo cifrado
     if (mode === 'cifrado' && cifradoState) {
@@ -371,7 +379,7 @@ export default function Terminal({ usuario, onEstado, onUnlock }) {
 
   const inputActivo = !loading && (
     mode === 'admin' ||
-    (mode === 'enigma' && enigma?.activo) ||
+    mode === 'enigma' ||
     (mode === 'cifrado' && cifradoState !== null)
   );
 
@@ -380,8 +388,10 @@ export default function Terminal({ usuario, onEstado, onUnlock }) {
     : mode === 'cifrado'
     ? 'escribe tu respuesta…'
     : !enigma ? 'conectando…'
+    : enigma.bloqueado ? 'bloqueado — escribe [admin] o [2]…'
+    : enigma.pendienteConfiguracion ? 'escribe [admin] para configurar enigmas…'
     : enigma.activo ? 'escribe [1] [2] [admin] o la clave…'
-    : 'protocolo completo';
+    : 'protocolo completo — escribe [2] o [admin]…';
 
   return (
     <Box>

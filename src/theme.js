@@ -11,34 +11,61 @@ const base = {
   shape: { borderRadius: 14 },
 };
 
+// ── Enrique — "Nocturne": Seashell / Wheat / French Blue / Midnight Violet ──
 const temaEnrique = createTheme({
   ...base,
   palette: {
     mode: 'light',
-    primary: { main: '#3E6868' },
-    secondary: { main: '#C94E44' },
-    background: { default: '#f5f0e8', paper: '#ffffff' },
-    text: { primary: '#2b3a3a', secondary: '#5a6e6e' },
+    primary: { main: '#3E4B8E', light: '#6470B5', dark: '#2B3566' },    // French Blue
+    secondary: { main: '#3D1534', light: '#6B3460', dark: '#1F0A1A' },  // Midnight Violet
+    background: {
+      default: '#FFF4EB',   // Seashell — fondo general
+      paper: '#FEFAF4',     // cálido entre seashell y wheat
+    },
+    text: {
+      primary: '#1A1520',   // near-midnight, lectura cómoda
+      secondary: '#5A5478',
+    },
+    divider: '#F0D9C4',     // wheat suave para bordes
   },
   components: {
     MuiCssBaseline: {
-      styleOverrides: { body: { backgroundColor: '#f5f0e8 !important', color: '#2b3a3a' } },
+      styleOverrides: { body: { backgroundColor: '#FFF4EB !important', color: '#1A1520' } },
+    },
+    MuiCard: {
+      styleOverrides: {
+        root: { backgroundImage: 'none' },
+      },
     },
   },
 });
 
+// ── Karol — "Spring Soft": Canyon / Buttercream / Morning Sky / Olive Grove ──
 const temaKarol = createTheme({
   ...base,
   palette: {
     mode: 'light',
-    primary: { main: '#DF6D41' },
-    secondary: { main: '#8DA6CC' },
-    background: { default: '#fdf6e8', paper: '#ffffff' },
-    text: { primary: '#3b2a1d', secondary: '#7a5c44' },
+    primary: { main: '#DF6D41', light: '#E8916B', dark: '#B5501F' },   // Canyon
+    secondary: { main: '#AAA648', light: '#C4C070', dark: '#7A7830' }, // Olive Grove (antes no usado)
+    background: {
+      default: '#FEF6E4',   // Buttercream tintado — fondo general
+      paper: '#FFFDF7',     // paper casi blanco con un suspiro cálido
+    },
+    text: {
+      primary: '#3B2A1D',
+      secondary: '#7A5C44',
+    },
+    info: { main: '#8DA6CC' },    // Morning Sky — para chips o badges
+    divider: '#F5E6C8',           // buttercream tenue
   },
   components: {
     MuiCssBaseline: {
-      styleOverrides: { body: { backgroundColor: '#fdf6e8 !important', color: '#3b2a1d' } },
+      styleOverrides: { body: { backgroundColor: '#FEF6E4 !important', color: '#3B2A1D' } },
+    },
+    MuiCard: {
+      styleOverrides: {
+        root: { backgroundImage: 'none' },
+      },
     },
   },
 });
