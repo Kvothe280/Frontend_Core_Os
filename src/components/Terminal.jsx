@@ -37,29 +37,23 @@ const TC = {
 
 const AYUDA = [
   '> Comandos disponibles:',
-  '  [1] responder  — ingresar clave del enigma actual',
-  '  [2] cifrado    — modo vale cifrado del mes',
-  '  [3] pregunta   — mostrar pregunta actual de nuevo',
-  '  [admin]        — panel de administración',
-  '  [salir]        — volver al modo enigma',
+  '  [1] / [pregunta] — mostrar pregunta del enigma actual',
+  '  [admin]          — panel de administración',
+  '  [salir]          — volver al modo enigma',
 ];
 
 // ── Panel de administración (enigmas + preguntas cifrado) ──────────────────
 
 function PanelAdmin({ usuario }) {
   const [enigmas, setEnigmas] = useState([]);
-  const [preguntas, setPreguntas] = useState([]);
   const [pool, setPool] = useState([]);
   const [editEnigma, setEditEnigma] = useState(null);
   const [nuevoE, setNuevoE] = useState({ pregunta: '', respuesta: '' });
-  const [editPregunta, setEditPregunta] = useState(null);
-  const [nuevoP, setNuevoP] = useState({ pregunta: '', respuesta: '' });
   const [nuevoPool, setNuevoPool] = useState({ titulo: '', descripcion: '' });
   const [error, setError] = useState('');
 
   const cargar = () => Promise.all([
     api.get('/api/enigmas').then(({ data }) => setEnigmas(data)),
-    api.get('/api/preguntas-cifrado').then(({ data }) => setPreguntas(data)),
     api.get('/api/vale-pool').then(({ data }) => setPool(data)),
   ]);
 
@@ -115,15 +109,6 @@ function PanelAdmin({ usuario }) {
       cargar();
     } catch {
       setError('Error al actualizar pregunta.');
-    }
-  };
-
-  const eliminarPregunta = async (id) => {
-    try {
-      await api.delete(`/api/preguntas-cifrado/${id}`);
-      cargar();
-    } catch {
-      setError('No se pudo borrar.');
     }
   };
 
@@ -204,49 +189,6 @@ function PanelAdmin({ usuario }) {
         </Card>
       )}
 
-      {/* Preguntas vale cifrado */}
-      <Typography variant="h6" sx={{ mb: 0.5 }}>Preguntas del vale cifrado ({preguntas.length}/5)</Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-        Karol debe responderlas todas para desbloquear el vale cifrado del mes.
-      </Typography>
-
-      {preguntas.map((p, i) => (
-        <Card key={p._id} sx={{ p: 2, mb: 1.5, border: '1px solid rgba(111,78,55,0.14)' }}>
-          {editPregunta === p._id ? (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              <TextField size="small" label="Pregunta" fullWidth value={p.pregunta}
-                onChange={(e) => setPreguntas((prev) => prev.map((x) => x._id === p._id ? { ...x, pregunta: e.target.value } : x))} />
-              <TextField size="small" label="Respuesta" fullWidth value={p.respuesta}
-                onChange={(e) => setPreguntas((prev) => prev.map((x) => x._id === p._id ? { ...x, respuesta: e.target.value } : x))} />
-              <Box sx={{ display: 'flex', gap: 1 }}>
-                <Button size="small" variant="contained" onClick={() => guardarPregunta(p)}>Guardar</Button>
-                <Button size="small" onClick={() => { setEditPregunta(null); cargar(); }}>Cancelar</Button>
-              </Box>
-            </Box>
-          ) : (
-            <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-              <Box>
-                <Typography variant="body2" sx={{ fontWeight: 600 }}>{i + 1}. {p.pregunta}</Typography>
-                <Typography variant="caption" color="text.secondary">Respuesta: {p.respuesta}</Typography>
-              </Box>
-              <Box>
-                <IconButton size="small" onClick={() => setEditPregunta(p._id)}><EditIcon fontSize="small" /></IconButton>
-                <IconButton size="small" onClick={() => eliminarPregunta(p._id)}><DeleteIcon fontSize="small" /></IconButton>
-              </Box>
-            </Box>
-          )}
-        </Card>
-      ))}
-
-      <Card sx={{ p: 2, border: '1px dashed rgba(111,78,55,0.3)' }} component="form" onSubmit={agregarPregunta}>
-        <Typography variant="subtitle2" sx={{ mb: 1 }}>Agregar pregunta {preguntas.length + 1}</Typography>
-        <TextField size="small" label="Pregunta" fullWidth sx={{ mb: 1 }} required value={nuevoP.pregunta}
-          onChange={(e) => setNuevoP((p) => ({ ...p, pregunta: e.target.value }))} />
-        <TextField size="small" label="Respuesta" fullWidth sx={{ mb: 1.5 }} required value={nuevoP.respuesta}
-          onChange={(e) => setNuevoP((p) => ({ ...p, respuesta: e.target.value }))} />
-        <Button type="submit" size="small" variant="outlined">Agregar</Button>
-      </Card>
-
       {/* Pool de vales mensuales */}
       <Divider sx={{ my: 3 }} />
       <Typography variant="h6" sx={{ mb: 0.5 }}>Pool de vales mensuales ({pool.length})</Typography>
@@ -291,8 +233,7 @@ export default function Terminal({ usuario, onEstado, onUnlock }) {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [decrypt, setDecrypt] = useState(null);
-  const [mode, setMode] = useState('enigma'); // 'enigma' | 'cifrado' | 'admin'
-  const [cifradoState, setCifradoState] = useState(null); // { preguntas, respuestas, index }
+  const [mode, setMode] = useState('enigma'); // 'enigma' | 'admin'
   const endRef = useRef(null);
 
   const pushLog = (line) => setLogs((prev) => [...prev, line]);
@@ -337,23 +278,6 @@ export default function Terminal({ usuario, onEstado, onUnlock }) {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [logs]);
 
-  const entrarCifrado = async () => {
-    setMode('cifrado');
-    const { data } = await api.get('/api/vale-cifrado');
-    if (data.desbloqueado) {
-      pushLogs(['[cifrado] Vale ya desbloqueado este mes.', `Recompensa: ${data.recompensa}`]);
-      setMode('enigma');
-      return;
-    }
-    if (!data.preguntas || data.preguntas.length === 0) {
-      pushLogs(['[cifrado] No hay preguntas configuradas todavía.']);
-      setMode('enigma');
-      return;
-    }
-    setCifradoState({ preguntas: data.preguntas, respuestas: {}, index: 0 });
-    pushLogs(['[cifrado] Modo vale cifrado activado.', `[cifrado] ${data.preguntas[0].pregunta}`]);
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     const texto = input.trim();
@@ -362,20 +286,13 @@ export default function Terminal({ usuario, onEstado, onUnlock }) {
     setInput('');
 
     // Comandos globales
-    if (texto === '1') {
-      if (enigma?.activo) pushLog(enigma.pregunta);
-      else pushLog('No hay enigma activo.');
-      return;
-    }
-    if (texto === '2') { await entrarCifrado(); return; }
-    if (texto === '3' || texto === 'pregunta') {
+    if (texto === '1' || texto === '3' || texto === 'pregunta') {
       if (enigma?.activo) pushLog(enigma.pregunta);
       else pushLog('No hay enigma activo.');
       return;
     }
     if (texto === 'salir' || texto === 'exit') {
       setMode('enigma');
-      setCifradoState(null);
       pushLog('[enigma] Volviendo al protocolo de enigmas.');
       return;
     }
@@ -391,42 +308,10 @@ export default function Terminal({ usuario, onEstado, onUnlock }) {
     if (mode === 'admin') return;
 
     // Enigma sin cargar — informar sin llamar al backend
-    if (mode === 'enigma' && !enigma?.activo) {
-      if (enigma?.bloqueado) pushLog('⛔ Terminal bloqueada. Usa [admin] para gestionar o [2] para el vale cifrado.');
+    if (!enigma?.activo) {
+      if (enigma?.bloqueado) pushLog('⛔ Terminal bloqueada. Usa [admin] para gestionar enigmas.');
       else if (enigma?.pendienteConfiguracion) pushLog('⚙ Aún no hay enigmas cargados. Usa [admin] para agregarlos.');
       else pushLog('Protocolo completo. La Bóveda está abierta.');
-      return;
-    }
-
-    // Modo cifrado
-    if (mode === 'cifrado' && cifradoState) {
-      const { preguntas, respuestas, index } = cifradoState;
-      const preguntaActual = preguntas[index];
-      const nuevasRespuestas = { ...respuestas, [preguntaActual.id]: texto };
-
-      if (index < preguntas.length - 1) {
-        const siguiente = preguntas[index + 1];
-        setCifradoState({ preguntas, respuestas: nuevasRespuestas, index: index + 1 });
-        pushLog(`[cifrado] ${siguiente.pregunta}`);
-      } else {
-        // Todas respondidas — enviar
-        setLoading(true);
-        try {
-          const { data } = await api.post('/api/vale-cifrado/intentar', { respuestas: nuevasRespuestas });
-          if (data.ok) {
-            pushLogs(['[cifrado] ✓ Protocolo cifrado completado.', `[cifrado] Recompensa: ${data.recompensa}`]);
-          } else {
-            const n = data.incorrectas?.length || 0;
-            pushLog(`[cifrado] ✗ ${n} respuesta${n !== 1 ? 's' : ''} incorrecta${n !== 1 ? 's' : ''}. Inténtalo de nuevo con [2].`);
-          }
-        } catch {
-          pushLog('[cifrado] ERROR: canal de validación caído.');
-        } finally {
-          setLoading(false);
-          setMode('enigma');
-          setCifradoState(null);
-        }
-      }
       return;
     }
 
@@ -455,21 +340,13 @@ export default function Terminal({ usuario, onEstado, onUnlock }) {
     }
   };
 
-  const inputActivo = !loading && (
-    mode === 'admin' ||
-    mode === 'enigma' ||
-    (mode === 'cifrado' && cifradoState !== null)
-  );
+  const inputActivo = !loading && mode === 'enigma';
 
-  const placeholder = mode === 'admin'
-    ? 'escribe "salir" para volver al protocolo…'
-    : mode === 'cifrado'
-    ? 'escribe tu respuesta…'
-    : !enigma ? 'conectando…'
-    : enigma.bloqueado ? 'bloqueado — escribe [admin] o [2]…'
+  const placeholder = !enigma ? 'conectando…'
+    : enigma.bloqueado ? 'bloqueado — escribe [admin]…'
     : enigma.pendienteConfiguracion ? 'escribe [admin] para configurar enigmas…'
-    : enigma.activo ? 'escribe [1] [2] [admin] o la clave…'
-    : 'protocolo completo — escribe [2] o [admin]…';
+    : enigma.activo ? 'escribe [1] [admin] o la clave del enigma…'
+    : 'protocolo completo — escribe [admin]…';
 
   return (
     <Box>
