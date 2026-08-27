@@ -46,18 +46,21 @@ const AYUDA = [
 
 // ── Panel de administración (enigmas + preguntas cifrado) ──────────────────
 
-function PanelAdmin() {
+function PanelAdmin({ usuario }) {
   const [enigmas, setEnigmas] = useState([]);
   const [preguntas, setPreguntas] = useState([]);
+  const [pool, setPool] = useState([]);
   const [editEnigma, setEditEnigma] = useState(null);
   const [nuevoE, setNuevoE] = useState({ pregunta: '', respuesta: '' });
   const [editPregunta, setEditPregunta] = useState(null);
   const [nuevoP, setNuevoP] = useState({ pregunta: '', respuesta: '' });
+  const [nuevoPool, setNuevoPool] = useState({ titulo: '', descripcion: '' });
   const [error, setError] = useState('');
 
   const cargar = () => Promise.all([
     api.get('/api/enigmas').then(({ data }) => setEnigmas(data)),
     api.get('/api/preguntas-cifrado').then(({ data }) => setPreguntas(data)),
+    api.get('/api/vale-pool').then(({ data }) => setPool(data)),
   ]);
 
   useEffect(() => { cargar(); }, []);
@@ -121,6 +124,27 @@ function PanelAdmin() {
       cargar();
     } catch {
       setError('No se pudo borrar.');
+    }
+  };
+
+  const agregarPool = async (e) => {
+    e.preventDefault();
+    setError('');
+    try {
+      await api.post('/api/vale-pool', nuevoPool);
+      setNuevoPool({ titulo: '', descripcion: '' });
+      cargar();
+    } catch {
+      setError('Error al guardar en el pool.');
+    }
+  };
+
+  const eliminarPool = async (id) => {
+    try {
+      await api.delete(`/api/vale-pool/${id}`);
+      cargar();
+    } catch {
+      setError('No se pudo borrar del pool.');
     }
   };
 
@@ -221,6 +245,36 @@ function PanelAdmin() {
         <TextField size="small" label="Respuesta" fullWidth sx={{ mb: 1.5 }} required value={nuevoP.respuesta}
           onChange={(e) => setNuevoP((p) => ({ ...p, respuesta: e.target.value }))} />
         <Button type="submit" size="small" variant="outlined">Agregar</Button>
+      </Card>
+
+      {/* Pool de vales mensuales */}
+      <Divider sx={{ my: 3 }} />
+      <Typography variant="h6" sx={{ mb: 0.5 }}>Pool de vales mensuales ({pool.length})</Typography>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+        Vales disponibles para el sorteo mensual. Se repiten solo cuando el pool se agota — no en meses consecutivos.
+      </Typography>
+
+      {pool.map((v) => (
+        <Card key={v._id} sx={{ p: 1.5, mb: 1, border: '1px solid rgba(111,78,55,0.14)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <Box sx={{ minWidth: 0 }}>
+            <Typography variant="body2" sx={{ fontWeight: 600 }}>{v.titulo}</Typography>
+            {v.descripcion && (
+              <Typography variant="caption" color="text.secondary">{v.descripcion}</Typography>
+            )}
+          </Box>
+          <IconButton size="small" onClick={() => eliminarPool(v._id)} sx={{ flexShrink: 0, ml: 1 }}>
+            <DeleteIcon fontSize="small" />
+          </IconButton>
+        </Card>
+      ))}
+
+      <Card sx={{ p: 2, mt: 1, border: '1px dashed rgba(111,78,55,0.3)' }} component="form" onSubmit={agregarPool}>
+        <Typography variant="subtitle2" sx={{ mb: 1 }}>Agregar vale al pool</Typography>
+        <TextField size="small" label="Título" fullWidth sx={{ mb: 1 }} required value={nuevoPool.titulo}
+          onChange={(e) => setNuevoPool((p) => ({ ...p, titulo: e.target.value }))} />
+        <TextField size="small" label="Descripción (opcional)" fullWidth sx={{ mb: 1.5 }} value={nuevoPool.descripcion}
+          onChange={(e) => setNuevoPool((p) => ({ ...p, descripcion: e.target.value }))} />
+        <Button type="submit" size="small" variant="outlined">Agregar al pool</Button>
       </Card>
     </Box>
   );
