@@ -13,9 +13,11 @@ import Typography from '@mui/material/Typography';
 import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
 import TerminalIcon from '@mui/icons-material/Terminal';
 import LockIcon from '@mui/icons-material/Lock';
-import LockOpenIcon from '@mui/icons-material/LockOpen';
 import MailOutlineIcon from '@mui/icons-material/MailOutline';
 import PhotoLibraryOutlinedIcon from '@mui/icons-material/PhotoLibraryOutlined';
+import CardGiftcardOutlinedIcon from '@mui/icons-material/CardGiftcardOutlined';
+import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
+import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import { getTheme } from './theme';
 import { api } from './api';
 import HomeDashboard from './components/HomeDashboard.jsx';
@@ -23,6 +25,8 @@ import Terminal from './components/Terminal.jsx';
 import Boveda from './components/Boveda.jsx';
 import Cartas from './components/Cartas.jsx';
 import Recuerdos from './components/Recuerdos.jsx';
+import Calendario from './components/Calendario.jsx';
+import Mensajes from './components/Mensajes.jsx';
 
 const DRAWER = 268;
 const SESSION_KEY = 'coreos_usuario';
@@ -38,7 +42,10 @@ function PantallaLogin({ onAcceso }) {
     try {
       const { data } = await api.post('/api/auth/login', { clave });
       if (data.ok) {
-        try { localStorage.setItem(SESSION_KEY, data.usuario); } catch {}
+        try {
+          localStorage.setItem(SESSION_KEY, data.usuario);
+          if (data.token) localStorage.setItem('coreos_token', data.token);
+        } catch {}
         onAcceso(data.usuario);
       } else {
         setError(true);
@@ -75,36 +82,32 @@ function PantallaLogin({ onAcceso }) {
   );
 }
 
+const NAV_ITEMS = [
+  { id: 'panel', label: 'Inicio', icon: <DashboardOutlinedIcon /> },
+  { id: 'cartas', label: 'Cartas', icon: <MailOutlineIcon /> },
+  { id: 'recuerdos', label: 'Recuerdos', icon: <PhotoLibraryOutlinedIcon /> },
+  { id: 'calendario', label: 'Calendario', icon: <CalendarMonthOutlinedIcon /> },
+  { id: 'mensajes', label: 'Mensajes', icon: <ChatBubbleOutlineIcon /> },
+  { id: 'terminal', label: 'Terminal', icon: <TerminalIcon /> },
+  { id: 'boveda', label: 'Nuestros Vales', icon: <CardGiftcardOutlinedIcon /> },
+];
+
 export default function App() {
   const [usuario, setUsuario] = useState(() => {
     try { return localStorage.getItem(SESSION_KEY) || null; } catch { return null; }
   });
   const [page, setPage] = useState('panel');
-  const [bovedaAbierta, setBovedaAbierta] = useState(false);
   const [tick, setTick] = useState(0);
   const theme = useMemo(() => getTheme(usuario), [usuario]);
 
   useEffect(() => {
     api.post('/api/auth/login', { clave: '' }).then(({ data }) => {
-      if (data.ok) setUsuario((prev) => prev || data.usuario);
+      if (data.ok) {
+        if (data.token) { try { localStorage.setItem('coreos_token', data.token); } catch {} }
+        setUsuario((prev) => prev || data.usuario);
+      }
     }).catch(() => {});
   }, []);
-
-  const items = useMemo(
-    () => [
-      { id: 'panel', label: 'Inicio', icon: <DashboardOutlinedIcon /> },
-      { id: 'cartas', label: 'Cartas', icon: <MailOutlineIcon /> },
-      { id: 'recuerdos', label: 'Recuerdos', icon: <PhotoLibraryOutlinedIcon /> },
-      { id: 'terminal', label: 'Terminal', icon: <TerminalIcon /> },
-      {
-        id: 'boveda',
-        label: 'Nuestros Vales',
-        icon: bovedaAbierta ? <LockOpenIcon /> : <LockIcon />,
-        locked: !bovedaAbierta,
-      },
-    ],
-    [bovedaAbierta]
-  );
 
   if (!usuario) {
     return (
@@ -143,7 +146,7 @@ export default function App() {
             </Typography>
           </Box>
           <List>
-            {items.map((item) => (
+            {NAV_ITEMS.map((item) => (
               <ListItemButton
                 key={item.id}
                 selected={page === item.id}
@@ -156,13 +159,10 @@ export default function App() {
                   },
                 }}
               >
-                <ListItemIcon sx={{ color: item.locked ? theme.palette.secondary.main : theme.palette.primary.main }}>
+                <ListItemIcon sx={{ color: theme.palette.primary.main }}>
                   {item.icon}
                 </ListItemIcon>
-                <ListItemText
-                  primary={item.label}
-                  secondary={item.locked ? 'Cifrado' : null}
-                />
+                <ListItemText primary={item.label} />
               </ListItemButton>
             ))}
           </List>
@@ -173,23 +173,15 @@ export default function App() {
             <HomeDashboard
               tick={tick}
               usuario={usuario}
-              onEstado={(abierta) => setBovedaAbierta(abierta)}
               onOpenCartas={() => setPage('cartas')}
               onOpenRecuerdos={() => setPage('recuerdos')}
             />
           )}
           {page === 'cartas' && <Cartas usuario={usuario} />}
           {page === 'recuerdos' && <Recuerdos onChange={() => setTick((n) => n + 1)} />}
-          {page === 'terminal' && (
-            <Terminal
-              usuario={usuario}
-              onEstado={(abierta) => setBovedaAbierta(abierta)}
-              onUnlock={() => {
-                setTick((n) => n + 1);
-                setPage('boveda');
-              }}
-            />
-          )}
+          {page === 'calendario' && <Calendario usuario={usuario} />}
+          {page === 'mensajes' && <Mensajes usuario={usuario} />}
+          {page === 'terminal' && <Terminal usuario={usuario} />}
           {page === 'boveda' && <Boveda tick={tick} />}
         </main>
       </div>

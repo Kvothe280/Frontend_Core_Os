@@ -17,7 +17,7 @@ import {
 import { api, mediaUrl } from '../api';
 import ValeCard from './ValeCard.jsx';
 import ValeDrawer from './ValeDrawer.jsx';
-import ValeCifradoCard from './ValeCifradoCard.jsx';
+import ValeEspecialCard from './ValeEspecialCard.jsx';
 
 function MetricCard({ label, value, hint, onClick }) {
   const theme = useTheme();
@@ -44,26 +44,24 @@ function MetricCard({ label, value, hint, onClick }) {
   );
 }
 
-export default function HomeDashboard({ tick, usuario, onEstado, onOpenCartas, onOpenRecuerdos }) {
+export default function HomeDashboard({ tick, usuario, onOpenCartas, onOpenRecuerdos }) {
   const theme = useTheme();
   const [data, setData] = useState(null);
   const [error, setError] = useState('');
   const [valeSel, setValeSel] = useState(null);
+  const [tickLocal, setTickLocal] = useState(0);
 
   const cargar = () => {
     api
       .get('/api/dashboard')
-      .then(({ data: payload }) => {
-        setData(payload);
-        onEstado?.(payload.bovedaAbierta);
-      })
+      .then(({ data: payload }) => setData(payload))
       .catch(() => setError('No me pude conectar con el núcleo. ¿Está corriendo el backend?'));
   };
 
   useEffect(() => {
     cargar();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tick]);
+  }, [tick, tickLocal]);
 
   if (error) {
     return (
@@ -85,7 +83,6 @@ export default function HomeDashboard({ tick, usuario, onEstado, onOpenCartas, o
 
   return (
     <Box>
-      {/* Encabezado */}
       <Typography variant="overline" sx={{ color: 'primary.main', letterSpacing: '0.18em' }}>
         Hola, {usuario === 'karol' ? 'Karol' : 'Enrique'}
       </Typography>
@@ -119,9 +116,9 @@ export default function HomeDashboard({ tick, usuario, onEstado, onOpenCartas, o
           onClick={onOpenRecuerdos}
         />
         <MetricCard
-          label="Protocolo"
-          value={`${data.enigmasResueltos}/${data.enigmasTotal}`}
-          hint={data.bovedaAbierta ? 'Bóveda abierta' : 'Bóveda cifrada'}
+          label="Vales canjeados"
+          value={metricas.valesCanjeados}
+          hint="Total acumulado"
         />
       </Box>
 
@@ -153,11 +150,10 @@ export default function HomeDashboard({ tick, usuario, onEstado, onOpenCartas, o
         Tus vales
       </Typography>
       <Typography color="text.secondary" sx={{ mb: 2 }}>
-        Cuatro mensuales solo para ti, más uno cifrado especial. Los mensuales se renuevan cada mes.
+        Cuatro mensuales solo para ti, más uno especial que se desbloquea respondiendo las preguntas del mes.
       </Typography>
-      {/* Vale cifrado: siempre al tope — compacto cuando ya está usado */}
       <Box sx={{ mb: 1.5 }}>
-        <ValeCifradoCard />
+        <ValeEspecialCard onCanjeado={() => setTickLocal((n) => n + 1)} />
       </Box>
       <Box
         sx={{
@@ -187,7 +183,21 @@ export default function HomeDashboard({ tick, usuario, onEstado, onOpenCartas, o
         {(data.recuerdosRecientes || []).map((item) => (
           <Card key={item._id} sx={{ overflow: 'hidden', border: `1px solid ${theme.palette.primary.main}24` }}>
             {item.imagen ? (
-              <CardMedia component="img" image={mediaUrl(item.imagen)} alt={item.titulo} sx={{ height: 140, objectFit: 'cover' }} />
+              <Box sx={{
+                height: 140,
+                bgcolor: '#f5f0eb',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                overflow: 'hidden',
+              }}>
+                <Box
+                  component="img"
+                  src={mediaUrl(item.imagen)}
+                  alt={item.titulo}
+                  sx={{ maxWidth: '100%', maxHeight: 140, objectFit: 'contain', display: 'block' }}
+                />
+              </Box>
             ) : (
               <Box sx={{ height: 140, bgcolor: '#ebe2d6' }} />
             )}

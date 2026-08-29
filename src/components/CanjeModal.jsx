@@ -56,8 +56,8 @@ export default function CanjeModal({ vale, open, onClose, onSuccess }) {
           </Alert>
         )}
         <TextField
-          label="Fecha"
-          type="datetime-local"
+          label="Fecha en que se usará"
+          type="date"
           fullWidth
           margin="normal"
           InputLabelProps={{ shrink: true }}

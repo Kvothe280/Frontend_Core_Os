@@ -10,212 +10,213 @@ import IconButton from '@mui/material/IconButton';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
 import { api } from '../api';
 
 const MONO_FONT = '"IBM Plex Mono", "Courier New", monospace';
 
-// Esquemas de color de la terminal por usuario
 const TC = {
   enrique: {
-    bg: '#0B0A12',                        // casi negro con tinte violeta
-    text: '#A8B4F0',                      // French Blue claro
-    input: '#C4CAFE',                     // más claro para el prompt
-    border: '#3E4B8E',                    // French Blue
+    bg: '#0B0A12',
+    text: '#A8B4F0',
+    input: '#C4CAFE',
+    border: '#3E4B8E',
     glow: 'rgba(62, 75, 142, 0.22)',
     adminTitle: '#A8B4F0',
   },
   karol: {
-    bg: '#120A05',                        // casi negro con tinte cálido
-    text: '#F4C896',                      // ámbar cálido / Canyon claro
-    input: '#FAD9B6',                     // más claro
-    border: '#DF6D41',                    // Canyon
+    bg: '#120A05',
+    text: '#F4C896',
+    input: '#FAD9B6',
+    border: '#DF6D41',
     glow: 'rgba(223, 109, 65, 0.18)',
     adminTitle: '#DF6D41',
   },
 };
 
 const AYUDA = [
-  '> Comandos disponibles:',
-  '  [1] / [pregunta] — mostrar pregunta del enigma actual',
-  '  [admin]          — panel de administración',
-  '  [salir]          — volver al modo enigma',
+  '> Comandos:',
+  '  [pregunta]  — mostrar la pregunta activa',
+  '  [admin]     — abrir panel de administración',
+  '  [salir]     — cerrar panel admin',
 ];
 
-// ── Panel de administración (enigmas + preguntas cifrado) ──────────────────
+// ── Panel de administración ────────────────────────────────────────────────
 
 function PanelAdmin({ usuario }) {
-  const [enigmas, setEnigmas] = useState([]);
-  const [pool, setPool] = useState([]);
-  const [editEnigma, setEditEnigma] = useState(null);
-  const [nuevoE, setNuevoE] = useState({ pregunta: '', respuesta: '' });
-  const [nuevoPool, setNuevoPool] = useState({ titulo: '', descripcion: '' });
+  const theme = useTheme();
+  const [preguntas, setPreguntas] = useState([]);
+  const [poolEspecial, setPoolEspecial] = useState([]);
+  const [poolMensual, setPoolMensual] = useState([]);
+  const [nuevaP, setNuevaP] = useState({ pregunta: '', respuesta: '' });
+  const [nuevoE, setNuevoE] = useState({ titulo: '', descripcion: '' });
+  const [nuevoM, setNuevoM] = useState({ titulo: '', descripcion: '' });
   const [error, setError] = useState('');
+  const [diaActual, setDiaActual] = useState(new Date().getDate());
 
   const cargar = () => Promise.all([
-    api.get('/api/enigmas').then(({ data }) => setEnigmas(data)),
-    api.get('/api/vale-pool').then(({ data }) => setPool(data)),
+    api.get('/api/preguntas-mes').then(({ data }) => setPreguntas(data)),
+    api.get('/api/vale-especial-pool').then(({ data }) => setPoolEspecial(data)),
+    api.get('/api/vale-pool').then(({ data }) => setPoolMensual(data)),
   ]);
 
   useEffect(() => { cargar(); }, []);
-
-  const agregarEnigma = async (e) => {
-    e.preventDefault();
-    setError('');
-    try {
-      await api.post('/api/enigmas', nuevoE);
-      setNuevoE({ pregunta: '', respuesta: '' });
-      cargar();
-    } catch (err) {
-      setError(err.response?.data?.error || 'Error al guardar enigma.');
-    }
-  };
-
-  const guardarEnigma = async (en) => {
-    try {
-      await api.put(`/api/enigmas/${en._id}`, { pregunta: en.pregunta, respuesta: en.respuesta });
-      setEditEnigma(null);
-      cargar();
-    } catch (err) {
-      setError(err.response?.data?.error || 'Error al actualizar.');
-    }
-  };
-
-  const eliminarEnigma = async (id) => {
-    try {
-      await api.delete(`/api/enigmas/${id}`);
-      cargar();
-    } catch (err) {
-      setError(err.response?.data?.error || 'No se pudo borrar.');
-    }
-  };
 
   const agregarPregunta = async (e) => {
     e.preventDefault();
     setError('');
     try {
-      await api.post('/api/preguntas-cifrado', { ...nuevoP, orden: preguntas.length + 1 });
-      setNuevoP({ pregunta: '', respuesta: '' });
+      await api.post('/api/preguntas-mes', nuevaP);
+      setNuevaP({ pregunta: '', respuesta: '' });
       cargar();
-    } catch {
-      setError('Error al guardar pregunta.');
+    } catch (err) {
+      setError(err.response?.data?.error || 'Error al guardar pregunta.');
     }
   };
 
-  const guardarPregunta = async (p) => {
-    try {
-      await api.put(`/api/preguntas-cifrado/${p._id}`, { pregunta: p.pregunta, respuesta: p.respuesta, orden: p.orden });
-      setEditPregunta(null);
-      cargar();
-    } catch {
-      setError('Error al actualizar pregunta.');
-    }
+  const borrarPregunta = async (id) => {
+    try { await api.delete(`/api/preguntas-mes/${id}`); cargar(); }
+    catch (err) { setError(err.response?.data?.error || 'No se pudo borrar.'); }
   };
 
-  const agregarPool = async (e) => {
+  const agregarEspecial = async (e) => {
     e.preventDefault();
     setError('');
     try {
-      await api.post('/api/vale-pool', nuevoPool);
-      setNuevoPool({ titulo: '', descripcion: '' });
+      await api.post('/api/vale-especial-pool', nuevoE);
+      setNuevoE({ titulo: '', descripcion: '' });
       cargar();
-    } catch {
-      setError('Error al guardar en el pool.');
+    } catch (err) {
+      setError(err.response?.data?.error || 'Error al guardar en el pool especial.');
     }
   };
 
-  const eliminarPool = async (id) => {
-    try {
-      await api.delete(`/api/vale-pool/${id}`);
-      cargar();
-    } catch {
-      setError('No se pudo borrar del pool.');
-    }
+  const borrarEspecial = async (id) => {
+    try { await api.delete(`/api/vale-especial-pool/${id}`); cargar(); }
+    catch (err) { setError(err.response?.data?.error || 'No se pudo borrar.'); }
   };
+
+  const agregarMensual = async (e) => {
+    e.preventDefault();
+    setError('');
+    try {
+      await api.post('/api/vale-pool', nuevoM);
+      setNuevoM({ titulo: '', descripcion: '' });
+      cargar();
+    } catch { setError('Error al guardar en el pool mensual.'); }
+  };
+
+  const borrarMensual = async (id) => {
+    try { await api.delete(`/api/vale-pool/${id}`); cargar(); }
+    catch { setError('No se pudo borrar del pool mensual.'); }
+  };
+
+  const puedeCargar = diaActual <= 12;
 
   return (
     <Box sx={{ mt: 4 }}>
       <Divider sx={{ mb: 3 }} />
       {error && <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>{error}</Alert>}
 
-      {/* Enigmas del mes */}
-      <Typography variant="h6" sx={{ mb: 0.5 }}>Enigmas del mes ({enigmas.length}/6)</Typography>
+      {/* ── Mis preguntas del mes ── */}
+      <Typography variant="h6" sx={{ mb: 0.5 }}>Mis preguntas del mes ({preguntas.length}/6)</Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-        Deben estar los 6 antes del día 15. No se pueden reutilizar respuestas de meses anteriores.
+        Las que escribes para que el otro las responda.
+        Período de carga: días 1–12. Solo tú puedes ver estas preguntas y sus respuestas.
       </Typography>
 
-      {enigmas.map((en, i) => (
-        <Card key={en._id} sx={{ p: 2, mb: 1.5, border: '1px solid rgba(111,78,55,0.14)' }}>
-          {editEnigma === en._id ? (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              <TextField size="small" label="Pregunta" fullWidth value={en.pregunta}
-                onChange={(e) => setEnigmas((prev) => prev.map((x) => x._id === en._id ? { ...x, pregunta: e.target.value } : x))} />
-              <TextField size="small" label="Respuesta (clave)" fullWidth value={en.respuesta}
-                onChange={(e) => setEnigmas((prev) => prev.map((x) => x._id === en._id ? { ...x, respuesta: e.target.value } : x))} />
-              <Box sx={{ display: 'flex', gap: 1 }}>
-                <Button size="small" variant="contained" onClick={() => guardarEnigma(en)}>Guardar</Button>
-                <Button size="small" onClick={() => { setEditEnigma(null); cargar(); }}>Cancelar</Button>
-              </Box>
-            </Box>
-          ) : (
-            <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-              <Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>Enigma {i + 1}</Typography>
-                  {en.resuelto && <Chip label="resuelto" size="small" color="success" />}
-                </Box>
-                <Typography variant="body2">{en.pregunta || '(sin pregunta)'}</Typography>
-                <Typography variant="caption" color="text.secondary">Clave: {en.respuesta}</Typography>
-              </Box>
-              {!en.resuelto && (
-                <Box>
-                  <IconButton size="small" onClick={() => setEditEnigma(en._id)}><EditIcon fontSize="small" /></IconButton>
-                  <IconButton size="small" onClick={() => eliminarEnigma(en._id)}><DeleteIcon fontSize="small" /></IconButton>
-                </Box>
-              )}
-            </Box>
+      {preguntas.map((p, i) => (
+        <Card key={p._id} sx={{ p: 1.5, mb: 1, border: `1px solid ${theme.palette.primary.main}22`, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <Box sx={{ minWidth: 0, flex: 1 }}>
+            <Typography variant="body2" sx={{ fontWeight: 600 }}>Pregunta {i + 1}</Typography>
+            <Typography variant="body2">{p.pregunta}</Typography>
+            <Typography variant="caption" color="text.secondary">Respuesta: {p.respuesta}</Typography>
+            {p.respondida && <Chip label="respondida" size="small" color="success" sx={{ ml: 1 }} />}
+          </Box>
+          {!p.respondida && puedeCargar && (
+            <IconButton size="small" onClick={() => borrarPregunta(p._id)} sx={{ flexShrink: 0, ml: 1 }}>
+              <DeleteIcon fontSize="small" />
+            </IconButton>
           )}
         </Card>
       ))}
 
-      {enigmas.length < 6 && (
-        <Card sx={{ p: 2, mb: 4, border: '1px dashed rgba(111,78,55,0.3)' }} component="form" onSubmit={agregarEnigma}>
-          <Typography variant="subtitle2" sx={{ mb: 1 }}>Agregar enigma {enigmas.length + 1}/6</Typography>
-          <TextField size="small" label="Pregunta" fullWidth sx={{ mb: 1 }} required value={nuevoE.pregunta}
-            onChange={(e) => setNuevoE((p) => ({ ...p, pregunta: e.target.value }))} />
-          <TextField size="small" label="Respuesta (clave)" fullWidth sx={{ mb: 1.5 }} required value={nuevoE.respuesta}
-            onChange={(e) => setNuevoE((p) => ({ ...p, respuesta: e.target.value }))} />
+      {preguntas.length < 6 && puedeCargar && (
+        <Card sx={{ p: 2, mb: 4, border: '1px dashed rgba(111,78,55,0.3)' }} component="form" onSubmit={agregarPregunta}>
+          <Typography variant="subtitle2" sx={{ mb: 1 }}>Agregar pregunta {preguntas.length + 1}/6</Typography>
+          <TextField size="small" label="Pregunta" fullWidth sx={{ mb: 1 }} required value={nuevaP.pregunta}
+            onChange={(e) => setNuevaP((p) => ({ ...p, pregunta: e.target.value }))} />
+          <TextField size="small" label="Respuesta (sin acentos — se normaliza)" fullWidth sx={{ mb: 1.5 }} required value={nuevaP.respuesta}
+            onChange={(e) => setNuevaP((p) => ({ ...p, respuesta: e.target.value }))} />
           <Button type="submit" size="small" variant="outlined">Agregar</Button>
         </Card>
       )}
 
-      {/* Pool de vales mensuales */}
+      {preguntas.length < 6 && !puedeCargar && (
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
+          El período de carga cerró el día 12. Faltan {6 - preguntas.length} preguntas —
+          esto generará una penalización para el otro.
+        </Typography>
+      )}
+
+      {/* ── Mi pool de premios especiales ── */}
       <Divider sx={{ my: 3 }} />
-      <Typography variant="h6" sx={{ mb: 0.5 }}>Pool de vales mensuales ({pool.length})</Typography>
+      <Typography variant="h6" sx={{ mb: 0.5 }}>Mi pool de premios especiales ({poolEspecial.length})</Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-        Vales disponibles para el sorteo mensual. Se repiten solo cuando el pool se agota — no en meses consecutivos.
+        Premios que le darás al otro cuando complete las preguntas. Solo tú los ves hasta que el
+        protocolo se completa. El sistema elige uno al azar cada mes (3 meses de pausa antes de repetir).
       </Typography>
 
-      {pool.map((v) => (
-        <Card key={v._id} sx={{ p: 1.5, mb: 1, border: '1px solid rgba(111,78,55,0.14)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <Box sx={{ minWidth: 0 }}>
+      {poolEspecial.map((v) => (
+        <Card key={v._id} sx={{ p: 1.5, mb: 1, border: `1px solid ${theme.palette.primary.main}22`, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <Box sx={{ minWidth: 0, flex: 1 }}>
             <Typography variant="body2" sx={{ fontWeight: 600 }}>{v.titulo}</Typography>
-            {v.descripcion && (
-              <Typography variant="caption" color="text.secondary">{v.descripcion}</Typography>
+            {v.descripcion && <Typography variant="caption" color="text.secondary">{v.descripcion}</Typography>}
+            {v.usadoEnPeriodos?.length > 0 && (
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                Usado en: {v.usadoEnPeriodos.slice(-3).join(', ')}
+              </Typography>
             )}
           </Box>
-          <IconButton size="small" onClick={() => eliminarPool(v._id)} sx={{ flexShrink: 0, ml: 1 }}>
+          <IconButton size="small" onClick={() => borrarEspecial(v._id)} sx={{ flexShrink: 0, ml: 1 }}>
             <DeleteIcon fontSize="small" />
           </IconButton>
         </Card>
       ))}
 
-      <Card sx={{ p: 2, mt: 1, border: '1px dashed rgba(111,78,55,0.3)' }} component="form" onSubmit={agregarPool}>
-        <Typography variant="subtitle2" sx={{ mb: 1 }}>Agregar vale al pool</Typography>
-        <TextField size="small" label="Título" fullWidth sx={{ mb: 1 }} required value={nuevoPool.titulo}
-          onChange={(e) => setNuevoPool((p) => ({ ...p, titulo: e.target.value }))} />
-        <TextField size="small" label="Descripción (opcional)" fullWidth sx={{ mb: 1.5 }} value={nuevoPool.descripcion}
-          onChange={(e) => setNuevoPool((p) => ({ ...p, descripcion: e.target.value }))} />
+      <Card sx={{ p: 2, mt: 1, mb: 4, border: '1px dashed rgba(111,78,55,0.3)' }} component="form" onSubmit={agregarEspecial}>
+        <Typography variant="subtitle2" sx={{ mb: 1 }}>Agregar premio especial</Typography>
+        <TextField size="small" label="Título" fullWidth sx={{ mb: 1 }} required value={nuevoE.titulo}
+          onChange={(e) => setNuevoE((p) => ({ ...p, titulo: e.target.value }))} />
+        <TextField size="small" label="Descripción (opcional)" fullWidth sx={{ mb: 1.5 }} value={nuevoE.descripcion}
+          onChange={(e) => setNuevoE((p) => ({ ...p, descripcion: e.target.value }))} />
+        <Button type="submit" size="small" variant="outlined">Agregar al pool</Button>
+      </Card>
+
+      {/* ── Pool de vales mensuales (compartida) ── */}
+      <Divider sx={{ my: 3 }} />
+      <Typography variant="h6" sx={{ mb: 0.5 }}>Pool de vales mensuales ({poolMensual.length})</Typography>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+        Vales compartidos del sorteo mensual. No se repiten en meses consecutivos.
+      </Typography>
+
+      {poolMensual.map((v) => (
+        <Card key={v._id} sx={{ p: 1.5, mb: 1, border: `1px solid ${theme.palette.primary.main}22`, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <Box sx={{ minWidth: 0, flex: 1 }}>
+            <Typography variant="body2" sx={{ fontWeight: 600 }}>{v.titulo}</Typography>
+            {v.descripcion && <Typography variant="caption" color="text.secondary">{v.descripcion}</Typography>}
+          </Box>
+          <IconButton size="small" onClick={() => borrarMensual(v._id)} sx={{ flexShrink: 0, ml: 1 }}>
+            <DeleteIcon fontSize="small" />
+          </IconButton>
+        </Card>
+      ))}
+
+      <Card sx={{ p: 2, mt: 1, border: '1px dashed rgba(111,78,55,0.3)' }} component="form" onSubmit={agregarMensual}>
+        <Typography variant="subtitle2" sx={{ mb: 1 }}>Agregar vale mensual al pool</Typography>
+        <TextField size="small" label="Título" fullWidth sx={{ mb: 1 }} required value={nuevoM.titulo}
+          onChange={(e) => setNuevoM((p) => ({ ...p, titulo: e.target.value }))} />
+        <TextField size="small" label="Descripción (opcional)" fullWidth sx={{ mb: 1.5 }} value={nuevoM.descripcion}
+          onChange={(e) => setNuevoM((p) => ({ ...p, descripcion: e.target.value }))} />
         <Button type="submit" size="small" variant="outlined">Agregar al pool</Button>
       </Card>
     </Box>
@@ -224,52 +225,48 @@ function PanelAdmin({ usuario }) {
 
 // ── Terminal principal ─────────────────────────────────────────────────────
 
-export default function Terminal({ usuario, onEstado, onUnlock }) {
+export default function Terminal({ usuario }) {
   const theme = useTheme();
   const tc = TC[usuario] || TC.enrique;
   const mono = { fontFamily: MONO_FONT, color: tc.text };
-  const [enigma, setEnigma] = useState(null);
+  const [pregunta, setPregunta] = useState(null);
   const [logs, setLogs] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [decrypt, setDecrypt] = useState(null);
-  const [mode, setMode] = useState('enigma'); // 'enigma' | 'admin'
+  const [mode, setMode] = useState('preguntas'); // 'preguntas' | 'admin'
   const endRef = useRef(null);
 
   const pushLog = (line) => setLogs((prev) => [...prev, line]);
   const pushLogs = (lines) => setLogs((prev) => [...prev, ...lines]);
 
-  const cargarEnigma = async (append = false) => {
-    const { data } = await api.get('/api/enigmas/activo');
-    setEnigma(data);
-    onEstado?.(data.bovedaAbierta);
+  const cargarPreguntaActiva = async (append = false) => {
+    const { data } = await api.get('/api/preguntas-mes/activa');
+    setPregunta(data);
     let lineas;
-    if (data.bloqueado) {
-      lineas = ['⛔ ' + data.mensaje];
-    } else if (data.pendienteConfiguracion) {
-      lineas = ['⚙  ' + data.mensaje];
-    } else if (data.activo) {
-      lineas = [`enigma ${data.orden}/6`, data.pregunta];
+    if (data.estado === 'carga') {
+      lineas = [`⏳ ${data.mensaje}`];
+    } else if (data.estado === 'sin_preguntas') {
+      lineas = [`⚙ ${data.mensaje}`];
+    } else if (data.estado === 'activa') {
+      lineas = [`pregunta ${data.orden}/${data.totalPreguntas} (${data.respondidas} respondidas)`, data.pregunta];
+    } else if (data.estado === 'desbloqueado' || data.estado === 'canjeado') {
+      lineas = ['✓ Protocolo completado. Vale especial desbloqueado.'];
+    } else if (data.estado === 'compensacion') {
+      lineas = [`⚠ ${data.mensaje}`];
+    } else if (data.estado === 'inutilizado') {
+      lineas = [`✗ ${data.mensaje}`];
     } else {
-      lineas = [data.mensaje];
+      lineas = [data.mensaje || 'Estado desconocido.'];
     }
     if (append) pushLogs(lineas);
-    else setLogs(['core-os login', 'iniciando protocolo de 6 capas…', ...AYUDA, '─'.repeat(40), ...lineas]);
+    else setLogs(['core-os login', 'protocolo de preguntas mensuales', ...AYUDA, '─'.repeat(40), ...lineas]);
   };
 
   useEffect(() => {
     let cancelado = false;
-    api.get('/api/enigmas/activo').then(({ data }) => {
-      if (cancelado) return;
-      setEnigma(data);
-      onEstado?.(data.bovedaAbierta);
-      let lineas;
-      if (data.bloqueado) lineas = ['⛔ ' + data.mensaje];
-      else if (data.pendienteConfiguracion) lineas = ['⚙  ' + data.mensaje];
-      else if (data.activo) lineas = [`enigma ${data.orden}/6`, data.pregunta];
-      else lineas = [data.mensaje];
-      setLogs(['core-os login', 'iniciando protocolo de 6 capas…', ...AYUDA, '─'.repeat(40), ...lineas]);
-    }).catch(() => setLogs(['core-os login', 'ERROR: núcleo fuera de línea.']));
+    cargarPreguntaActiva().catch(() => {
+      if (!cancelado) setLogs(['core-os login', 'ERROR: núcleo fuera de línea.']);
+    });
     return () => { cancelado = true; };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -285,15 +282,14 @@ export default function Terminal({ usuario, onEstado, onUnlock }) {
     pushLog(`> ${texto}`);
     setInput('');
 
-    // Comandos globales
-    if (texto === '1' || texto === '3' || texto === 'pregunta') {
-      if (enigma?.activo) pushLog(enigma.pregunta);
-      else pushLog('No hay enigma activo.');
+    if (texto === 'pregunta') {
+      if (pregunta?.estado === 'activa') pushLog(pregunta.pregunta);
+      else pushLog('No hay pregunta activa en este momento.');
       return;
     }
     if (texto === 'salir' || texto === 'exit') {
-      setMode('enigma');
-      pushLog('[enigma] Volviendo al protocolo de enigmas.');
+      setMode('preguntas');
+      pushLog('[protocolo] Volviendo al modo preguntas.');
       return;
     }
     if (texto === 'ayuda' || texto === 'help') {
@@ -307,31 +303,27 @@ export default function Terminal({ usuario, onEstado, onUnlock }) {
 
     if (mode === 'admin') return;
 
-    // Enigma sin cargar — informar sin llamar al backend
-    if (!enigma?.activo) {
-      if (enigma?.bloqueado) pushLog('⛔ Terminal bloqueada. Usa [admin] para gestionar enigmas.');
-      else if (enigma?.pendienteConfiguracion) pushLog('⚙ Aún no hay enigmas cargados. Usa [admin] para agregarlos.');
-      else pushLog('Protocolo completo. La Bóveda está abierta.');
+    // Si no hay pregunta activa
+    if (!pregunta || pregunta.estado !== 'activa') {
+      if (pregunta?.estado === 'carga') pushLog('⏳ Las preguntas abren el día 13.');
+      else if (pregunta?.estado === 'desbloqueado') pushLog('✓ Protocolo completado. Vale especial listo en Nuestros Vales.');
+      else if (pregunta?.estado === 'inutilizado') pushLog('✗ El plazo venció el día 18. Hasta el próximo mes.');
+      else pushLog('Sin pregunta activa.');
       return;
     }
 
-    // Modo enigma — validar respuesta
+    // Responder pregunta activa
     setLoading(true);
     try {
-      const { data } = await api.post('/api/terminal/validar', { respuesta: texto });
-      if (data.ok && data.desencriptando) {
-        setDecrypt(data);
-        await new Promise((r) => setTimeout(r, 2500));
-        setDecrypt(null);
-        pushLog(data.mensaje);
-        onEstado?.(data.bovedaAbierta);
-        if (data.bovedaAbierta) {
-          onUnlock?.();
-        } else {
-          await cargarEnigma(true);
-        }
+      const { data } = await api.post('/api/preguntas-mes/responder', { respuesta: texto });
+      if (data.completado) {
+        pushLog(`✓ ${data.mensaje}`);
+        await cargarPreguntaActiva(true);
+      } else if (data.incorrecto) {
+        pushLog(`✗ ${data.mensaje}`);
       } else {
         pushLog(data.mensaje);
+        await cargarPreguntaActiva(true);
       }
     } catch {
       pushLog('ERROR: canal de validación caído.');
@@ -340,40 +332,29 @@ export default function Terminal({ usuario, onEstado, onUnlock }) {
     }
   };
 
-  const inputActivo = !loading && mode === 'enigma';
+  const inputActivo = !loading && mode === 'preguntas';
 
-  const placeholder = !enigma ? 'conectando…'
-    : enigma.bloqueado ? 'bloqueado — escribe [admin]…'
-    : enigma.pendienteConfiguracion ? 'escribe [admin] para configurar enigmas…'
-    : enigma.activo ? 'escribe [1] [admin] o la clave del enigma…'
-    : 'protocolo completo — escribe [admin]…';
+  const placeholder = !pregunta ? 'conectando…'
+    : pregunta.estado === 'carga' ? 'preguntas disponibles el día 13…'
+    : pregunta.estado === 'activa' ? 'escribe la respuesta o [pregunta] [admin]…'
+    : pregunta.estado === 'desbloqueado' ? 'protocolo completo — escribe [admin]…'
+    : 'escribe [admin] para gestionar…';
 
   return (
     <Box>
-      {decrypt && (
-        <div className="decrypt-overlay">
-          <div className="decrypt-box">
-            <div>DESENCRIPTANDO ARCHIVO…</div>
-            <div style={{ marginTop: 8, opacity: 0.8 }}>{decrypt.mensaje}</div>
-            <div className="decrypt-bar"><span /></div>
-          </div>
-        </div>
-      )}
-
       <Typography variant="overline" sx={{ color: 'primary.main' }}>Acceso</Typography>
-      <Typography variant="h3" sx={{ mb: 1 }}>Terminal de enigmas</Typography>
+      <Typography variant="h3" sx={{ mb: 1 }}>Terminal</Typography>
       <Typography color="text.secondary" sx={{ mb: 2 }}>
-        Seis claves. Una por mes. La Bóveda no abre hasta completar el protocolo.
+        Seis preguntas del otro. Respóndelas del día 13 al 18 para desbloquear tu vale especial.
       </Typography>
 
       <Box sx={{ display: 'flex', gap: 1, mb: 1.5 }}>
-        <Chip label={`modo: ${mode}`} size="small" sx={{ bgcolor: mode === 'cifrado' ? tc.border : `${tc.border}18`, color: mode === 'cifrado' ? '#fff' : tc.text, fontFamily: MONO_FONT, fontSize: 11 }} />
-        {enigma && !enigma.bloqueado && !enigma.pendienteConfiguracion && (
-          <Chip label={`${enigma.enigmasResueltos ?? 0}/6 enigmas`} size="small" variant="outlined" />
+        <Chip label={`modo: ${mode}`} size="small" sx={{ bgcolor: `${tc.border}18`, color: tc.text, fontFamily: MONO_FONT, fontSize: 11 }} />
+        {pregunta?.estado === 'activa' && (
+          <Chip label={`${pregunta.respondidas}/${pregunta.totalPreguntas} respondidas`} size="small" variant="outlined" />
         )}
       </Box>
 
-      {/* Recuadro negro — siempre logs, nunca formularios */}
       <Box sx={{ border: `1px solid ${tc.border}`, borderRadius: 2, overflow: 'hidden' }}>
         <Box sx={{ backgroundColor: tc.bg, p: 2, minHeight: 340, boxShadow: `inset 0 0 50px ${tc.glow}` }}>
           {logs.map((line, i) => (
@@ -398,20 +379,19 @@ export default function Terminal({ usuario, onEstado, onUnlock }) {
         )}
       </Box>
 
-      {/* Panel admin — fuera del recuadro negro, solo visible en modo admin */}
       {mode === 'admin' && (
         <Box sx={{ mt: 2, border: `1px solid ${tc.border}30`, borderRadius: 2, overflow: 'hidden' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 2, py: 1.5, bgcolor: tc.bg, borderBottom: `1px solid ${tc.border}30` }}>
             <Typography sx={{ fontFamily: MONO_FONT, fontSize: 12, color: tc.adminTitle }}>
               ⚙ admin — {usuario}
             </Typography>
-            <Button size="small" onClick={() => { setMode('enigma'); pushLog('[admin] Panel cerrado. Volviendo al protocolo.'); }}
+            <Button size="small" onClick={() => { setMode('preguntas'); pushLog('[admin] Panel cerrado.'); }}
               sx={{ fontFamily: MONO_FONT, fontSize: 11, color: tc.text, borderColor: `${tc.border}60`, '&:hover': { borderColor: tc.border } }}
               variant="outlined">
               cerrar
             </Button>
           </Box>
-          <Box sx={{ p: 2, bgcolor: theme.palette.background.paper, maxHeight: 560, overflowY: 'auto' }}>
+          <Box sx={{ p: 2, bgcolor: theme.palette.background.paper, maxHeight: 640, overflowY: 'auto' }}>
             <PanelAdmin usuario={usuario} />
           </Box>
         </Box>

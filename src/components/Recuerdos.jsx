@@ -3,16 +3,17 @@ import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
-import CardMedia from '@mui/material/CardMedia';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
+import IconButton from '@mui/material/IconButton';
 import MenuItem from '@mui/material/MenuItem';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
+import CloseIcon from '@mui/icons-material/Close';
 import { api, mediaUrl } from '../api';
 
 const TIPOS = [
@@ -24,6 +25,134 @@ function etiquetaTipo(tipo) {
   if (tipo === 'cafe' || tipo === 'cita') return 'Cita';
   return TIPOS.find((t) => t.value === tipo)?.label ?? tipo;
 }
+
+// ── Lightbox ──────────────────────────────────────────────────────────────────
+
+function Lightbox({ src, alt, open, onClose }) {
+  if (!open) return null;
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth={false} fullScreen
+      PaperProps={{ sx: { background: 'rgba(0,0,0,0.92)', display: 'flex', alignItems: 'center', justifyContent: 'center' } }}
+    >
+      <IconButton onClick={onClose} sx={{ position: 'absolute', top: 16, right: 16, color: '#fff', zIndex: 10 }}>
+        <CloseIcon />
+      </IconButton>
+      <Box
+        component="img"
+        src={src}
+        alt={alt}
+        sx={{ maxWidth: '95vw', maxHeight: '95vh', objectFit: 'contain', borderRadius: 1 }}
+      />
+    </Dialog>
+  );
+}
+
+// ── Tarjeta de recuerdo ───────────────────────────────────────────────────────
+
+function RecuerdoCard({ item, onEditar, onBorrar }) {
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+
+  return (
+    <Card sx={{ overflow: 'hidden' }}>
+      {item.imagen ? (
+        <>
+          <Box
+            onClick={() => setLightboxOpen(true)}
+            sx={{
+              cursor: 'zoom-in',
+              bgcolor: '#f5f0eb',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              height: 180,
+              overflow: 'hidden',
+            }}
+          >
+            <Box
+              component="img"
+              src={mediaUrl(item.imagen)}
+              alt={item.titulo}
+              sx={{ maxWidth: '100%', maxHeight: 180, objectFit: 'contain', display: 'block' }}
+            />
+          </Box>
+          <Lightbox
+            src={mediaUrl(item.imagen)}
+            alt={item.titulo}
+            open={lightboxOpen}
+            onClose={() => setLightboxOpen(false)}
+          />
+        </>
+      ) : (
+        <Box sx={{ height: 80, bgcolor: '#ebe2d6' }} />
+      )}
+      <Box sx={{ p: 2 }}>
+        <Typography variant="overline">{etiquetaTipo(item.tipo)}</Typography>
+        <Typography variant="h6">{item.titulo}</Typography>
+        <Typography variant="body2" color="text.secondary">
+          {new Date(item.fecha).toLocaleDateString('es-MX')}
+        </Typography>
+        {item.nota && <Typography variant="body2" sx={{ mt: 1 }}>{item.nota}</Typography>}
+        {item.imagen && (
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+            Toca la imagen para verla completa
+          </Typography>
+        )}
+        <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+          <Button size="small" onClick={() => onEditar(item)}>Editar</Button>
+          <Button size="small" color="error" onClick={() => onBorrar(item._id)}>Quitar</Button>
+        </Box>
+      </Box>
+    </Card>
+  );
+}
+
+// ── Tarjeta galería ───────────────────────────────────────────────────────────
+
+function GaleriaCard({ item }) {
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+
+  return (
+    <Card sx={{ overflow: 'hidden', border: '1px solid rgba(111,78,55,0.12)' }}>
+      <Box
+        onClick={() => setLightboxOpen(true)}
+        sx={{
+          cursor: 'zoom-in',
+          bgcolor: '#f5f0eb',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: 200,
+          overflow: 'hidden',
+        }}
+      >
+        <Box
+          component="img"
+          src={mediaUrl(item.imagen)}
+          alt={item.titulo}
+          sx={{ maxWidth: '100%', maxHeight: 200, objectFit: 'contain', display: 'block' }}
+        />
+      </Box>
+      <Box sx={{ p: 1.5 }}>
+        <Typography variant="caption" sx={{ color: 'primary.main', display: 'block' }}>{etiquetaTipo(item.tipo)}</Typography>
+        <Typography variant="subtitle2">{item.titulo}</Typography>
+        <Typography variant="caption" color="text.secondary">{new Date(item.fecha).toLocaleDateString('es-MX')}</Typography>
+        {item.nota && (
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, fontSize: '0.75rem' }}>
+            {item.nota}
+          </Typography>
+        )}
+      </Box>
+      <Lightbox
+        src={mediaUrl(item.imagen)}
+        alt={item.titulo}
+        open={lightboxOpen}
+        onClose={() => setLightboxOpen(false)}
+      />
+    </Card>
+  );
+}
+
+// ── Formulario agregar ────────────────────────────────────────────────────────
 
 function FormularioAgregar({ onAgregado }) {
   const [titulo, setTitulo] = useState('');
@@ -41,7 +170,7 @@ function FormularioAgregar({ onAgregado }) {
     form.append('nota', nota);
     form.append('tipo', tipo);
     if (fecha) form.append('fecha', fecha);
-    if (archivo) form.append('imagen', archivo);
+    if (archivo) form.append('archivo', archivo);
     try {
       await api.post('/api/recuerdos', form);
       setTitulo('');
@@ -104,6 +233,8 @@ function FormularioAgregar({ onAgregado }) {
   );
 }
 
+// ── Dialog editar ─────────────────────────────────────────────────────────────
+
 function DialogEditar({ item, onClose, onGuardado }) {
   const [titulo, setTitulo] = useState(item?.titulo || '');
   const [nota, setNota] = useState(item?.nota || '');
@@ -145,6 +276,8 @@ function DialogEditar({ item, onClose, onGuardado }) {
     </Dialog>
   );
 }
+
+// ── Página principal ──────────────────────────────────────────────────────────
 
 export default function Recuerdos({ onChange }) {
   const [items, setItems] = useState([]);
@@ -189,25 +322,7 @@ export default function Recuerdos({ onChange }) {
       {tab === 0 && (
         <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(3, 1fr)' } }}>
           {items.map((item) => (
-            <Card key={item._id} sx={{ overflow: 'hidden' }}>
-              {item.imagen ? (
-                <CardMedia component="img" image={mediaUrl(item.imagen)} alt={item.titulo} sx={{ height: 180, objectFit: 'cover' }} />
-              ) : (
-                <Box sx={{ height: 80, bgcolor: '#ebe2d6' }} />
-              )}
-              <Box sx={{ p: 2 }}>
-                <Typography variant="overline">{etiquetaTipo(item.tipo)}</Typography>
-                <Typography variant="h6">{item.titulo}</Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {new Date(item.fecha).toLocaleDateString('es-MX')}
-                </Typography>
-                {item.nota && <Typography variant="body2" sx={{ mt: 1 }}>{item.nota}</Typography>}
-                <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
-                  <Button size="small" onClick={() => setEditando(item)}>Editar</Button>
-                  <Button size="small" color="error" onClick={() => borrar(item._id)}>Quitar</Button>
-                </Box>
-              </Box>
-            </Card>
+            <RecuerdoCard key={item._id} item={item} onEditar={setEditando} onBorrar={borrar} />
           ))}
           {items.length === 0 && <Typography color="text.secondary">Aún no hay recuerdos. Agrégalos en la pestaña Agregar.</Typography>}
         </Box>
@@ -220,14 +335,7 @@ export default function Recuerdos({ onChange }) {
           ) : (
             <Box sx={{ display: 'grid', gap: 1.5, gridTemplateColumns: { xs: '1fr 1fr', sm: 'repeat(3, 1fr)', md: 'repeat(4, 1fr)' } }}>
               {conImagen.map((item) => (
-                <Card key={item._id} sx={{ overflow: 'hidden', border: '1px solid rgba(111,78,55,0.12)' }}>
-                  <CardMedia component="img" image={mediaUrl(item.imagen)} alt={item.titulo} sx={{ height: 200, objectFit: 'cover' }} />
-                  <Box sx={{ p: 1.5 }}>
-                    <Typography variant="caption" sx={{ color: 'primary.main', display: 'block' }}>{etiquetaTipo(item.tipo)}</Typography>
-                    <Typography variant="subtitle2">{item.titulo}</Typography>
-                    <Typography variant="caption" color="text.secondary">{new Date(item.fecha).toLocaleDateString('es-MX')}</Typography>
-                  </Box>
-                </Card>
+                <GaleriaCard key={item._id} item={item} />
               ))}
             </Box>
           )}
