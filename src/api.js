@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-export const API = 'http://localhost:3001';
+export const API = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 export const api = axios.create({ baseURL: API });
 
@@ -14,16 +14,16 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Si el servidor responde 401 limpiamos la sesión para forzar re-login
+// Si el servidor responde 401 en rutas protegidas, limpiamos sesión y forzamos re-login
 api.interceptors.response.use(
   (r) => r,
   (err) => {
-    if (err.response?.status === 401) {
+    const url = err.config?.url || '';
+    if (err.response?.status === 401 && !url.includes('/auth/login')) {
       try {
         localStorage.removeItem('coreos_token');
         localStorage.removeItem('coreos_usuario');
       } catch {}
-      // Reload forzará la pantalla de login
       window.location.reload();
     }
     return Promise.reject(err);

@@ -98,12 +98,12 @@ function FormProponerCita({ open, onClose, onCreada }) {
       <DialogContent>
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
         <TextField label="Título" fullWidth sx={{ mt: 1, mb: 2 }} required value={form.titulo}
-          onChange={(e) => setForm((p) => ({ ...p, titulo: e.target.value }))} />
+          onChange={(e) => { setError(''); setForm((p) => ({ ...p, titulo: e.target.value })); }} />
         <TextField label="Nota (opcional)" fullWidth multiline rows={2} sx={{ mb: 2 }} value={form.nota}
           onChange={(e) => setForm((p) => ({ ...p, nota: e.target.value }))} />
         <Box sx={{ display: 'flex', gap: 1.5 }}>
           <TextField label="Fecha" type="date" fullWidth required value={form.fecha} InputLabelProps={{ shrink: true }}
-            onChange={(e) => setForm((p) => ({ ...p, fecha: e.target.value }))} />
+            onChange={(e) => { setError(''); setForm((p) => ({ ...p, fecha: e.target.value })); }} />
           <TextField label="Hora" type="time" sx={{ width: 130 }} required value={form.hora} InputLabelProps={{ shrink: true }}
             onChange={(e) => setForm((p) => ({ ...p, hora: e.target.value }))} />
         </Box>
@@ -122,6 +122,8 @@ function CitaPendienteCard({ cita, usuario, onRefresh }) {
   const theme = useTheme();
   const esMia = cita.proponente === usuario;
   const [loading, setLoading] = useState(false);
+  const [nuevaFecha, setNuevaFecha] = useState('');
+  const [reagendando, setReagendando] = useState(false);
 
   const accion = async (endpoint) => {
     setLoading(true);
@@ -132,6 +134,17 @@ function CitaPendienteCard({ cita, usuario, onRefresh }) {
       onRefresh?.();
     } catch { /* ignore */ }
     finally { setLoading(false); }
+  };
+
+  const reagendar = async () => {
+    if (!nuevaFecha) return;
+    setReagendando(true);
+    try {
+      await api.put(`/api/citas-propuestas/${cita._id}/reagendar`, { fecha: nuevaFecha });
+      setNuevaFecha('');
+      onRefresh?.();
+    } catch { /* ignore */ }
+    finally { setReagendando(false); }
   };
 
   const esAceptada = cita.estado === 'aceptada';
@@ -163,10 +176,34 @@ function CitaPendienteCard({ cita, usuario, onRefresh }) {
         {!esMia && !esAceptada && (
           <Button size="small" color="error" onClick={() => accion('rechazar')} disabled={loading}>Rechazar</Button>
         )}
-        <Button size="small" variant="outlined" color="inherit" onClick={() => accion('cancelar')} disabled={loading}>
-          {esAceptada ? 'Cancelar cita' : esMia ? 'Retirar' : null}
-        </Button>
+        {(esAceptada || esMia) && (
+          <Button size="small" variant="outlined" color="inherit" onClick={() => accion('cancelar')} disabled={loading}>
+            {esAceptada ? 'Cancelar cita' : 'Retirar'}
+          </Button>
+        )}
       </Box>
+
+      {esAceptada && (
+        <Box sx={{ display: 'flex', gap: 1, mt: 1.5, alignItems: 'center' }}>
+          <TextField
+            type="date"
+            size="small"
+            value={nuevaFecha}
+            onChange={(e) => setNuevaFecha(e.target.value)}
+            inputProps={{ min: new Date().toISOString().slice(0, 10) }}
+            sx={{ flex: 1, '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+          />
+          <Button
+            size="small"
+            variant="outlined"
+            onClick={reagendar}
+            disabled={!nuevaFecha || reagendando}
+            sx={{ whiteSpace: 'nowrap' }}
+          >
+            Reagendar
+          </Button>
+        </Box>
+      )}
     </Card>
   );
 }
@@ -176,11 +213,6 @@ function CitaPendienteCard({ cita, usuario, onRefresh }) {
 function DiaDetalle({ dia, eventos, usuario, onRefresh }) {
   const theme = useTheme();
   if (!dia || !eventos?.length) return null;
-
-  const completar = async (id) => {
-    try { await api.put(`/api/citas-propuestas/${id}/completar`); onRefresh?.(); }
-    catch { /* ignore */ }
-  };
 
   return (
     <Card sx={{ mt: 2, p: 2, border: `1px solid ${theme.palette.primary.main}29` }}>
@@ -204,11 +236,6 @@ function DiaDetalle({ dia, eventos, usuario, onRefresh }) {
                 )}
               </Box>
               <Typography variant="body2">{ev.titulo}</Typography>
-              {(ev.tipo === 'cita_confirmada') && (ev.proponente === usuario || ev.destinatario === usuario) && (
-                <Button size="small" sx={{ mt: 0.5, p: 0 }} onClick={() => completar(ev.id)}>
-                  Marcar como completada
-                </Button>
-              )}
             </Box>
           </Box>
         );

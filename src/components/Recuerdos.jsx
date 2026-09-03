@@ -51,10 +51,12 @@ function Lightbox({ src, alt, open, onClose }) {
 
 function RecuerdoCard({ item, onEditar, onBorrar }) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [imgRota, setImgRota] = useState(false);
+  const imgSrc = item.imagen ? mediaUrl(item.imagen) : '';
 
   return (
     <Card sx={{ overflow: 'hidden' }}>
-      {item.imagen ? (
+      {imgSrc && !imgRota ? (
         <>
           <Box
             onClick={() => setLightboxOpen(true)}
@@ -70,13 +72,14 @@ function RecuerdoCard({ item, onEditar, onBorrar }) {
           >
             <Box
               component="img"
-              src={mediaUrl(item.imagen)}
+              src={imgSrc}
               alt={item.titulo}
+              onError={() => setImgRota(true)}
               sx={{ maxWidth: '100%', maxHeight: 180, objectFit: 'contain', display: 'block' }}
             />
           </Box>
           <Lightbox
-            src={mediaUrl(item.imagen)}
+            src={imgSrc}
             alt={item.titulo}
             open={lightboxOpen}
             onClose={() => setLightboxOpen(false)}

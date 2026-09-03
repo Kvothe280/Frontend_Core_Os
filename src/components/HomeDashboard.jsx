@@ -44,6 +44,23 @@ function MetricCard({ label, value, hint, onClick }) {
   );
 }
 
+function RecuerdoImagen({ imagen, titulo }) {
+  const [roto, setRoto] = useState(false);
+  const src = imagen ? mediaUrl(imagen) : '';
+  if (!src || roto) return <Box sx={{ height: 140, bgcolor: '#ebe2d6' }} />;
+  return (
+    <Box sx={{ height: 140, bgcolor: '#f5f0eb', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+      <Box
+        component="img"
+        src={src}
+        alt={titulo}
+        onError={() => setRoto(true)}
+        sx={{ maxWidth: '100%', maxHeight: 140, objectFit: 'contain', display: 'block' }}
+      />
+    </Box>
+  );
+}
+
 export default function HomeDashboard({ tick, usuario, onOpenCartas, onOpenRecuerdos }) {
   const theme = useTheme();
   const [data, setData] = useState(null);
@@ -182,25 +199,7 @@ export default function HomeDashboard({ tick, usuario, onOpenCartas, onOpenRecue
       >
         {(data.recuerdosRecientes || []).map((item) => (
           <Card key={item._id} sx={{ overflow: 'hidden', border: `1px solid ${theme.palette.primary.main}24` }}>
-            {item.imagen ? (
-              <Box sx={{
-                height: 140,
-                bgcolor: '#f5f0eb',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                overflow: 'hidden',
-              }}>
-                <Box
-                  component="img"
-                  src={mediaUrl(item.imagen)}
-                  alt={item.titulo}
-                  sx={{ maxWidth: '100%', maxHeight: 140, objectFit: 'contain', display: 'block' }}
-                />
-              </Box>
-            ) : (
-              <Box sx={{ height: 140, bgcolor: '#ebe2d6' }} />
-            )}
+            <RecuerdoImagen imagen={item.imagen} titulo={item.titulo} />
             <Typography variant="caption" sx={{ display: 'block', p: 1 }}>
               {item.titulo}
             </Typography>

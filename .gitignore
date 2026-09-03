@@ -1,3 +1,19 @@
+# Dependencias
 node_modules/
+
+# Build de producción
 dist/
+
+# Variables de entorno — NUNCA subir al repo
+.env
+.env.*
+!.env.example
+*.local
+
+# OS
 .DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
