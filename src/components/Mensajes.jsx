@@ -2,9 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
-import Dialog from '@mui/material/Dialog';
 import IconButton from '@mui/material/IconButton';
-import InputAdornment from '@mui/material/InputAdornment';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
@@ -12,8 +10,8 @@ import CloseIcon from '@mui/icons-material/Close';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import SendIcon from '@mui/icons-material/Send';
 import { api, mediaUrl } from '../api';
-
-const OTROS = { karol: 'Karol', enrique: 'Enrique' };
+import { NOMBRES, nombreDe, otroUsuario } from '../constants/usuarios';
+import Lightbox from './Lightbox.jsx';
 
 function tiempoRelativo(fecha) {
   const diff = Date.now() - new Date(fecha).getTime();
@@ -23,20 +21,6 @@ function tiempoRelativo(fecha) {
   const h = Math.floor(min / 60);
   if (h < 24) return `hace ${h}h`;
   return new Date(fecha).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
-}
-
-function Lightbox({ src, open, onClose }) {
-  if (!open) return null;
-  return (
-    <Dialog open onClose={onClose} maxWidth={false} fullScreen
-      PaperProps={{ sx: { background: 'rgba(0,0,0,0.92)', display: 'flex', alignItems: 'center', justifyContent: 'center' } }}
-    >
-      <IconButton onClick={onClose} sx={{ position: 'absolute', top: 16, right: 16, color: '#fff', zIndex: 10 }}>
-        <CloseIcon />
-      </IconButton>
-      <Box component="img" src={src} sx={{ maxWidth: '95vw', maxHeight: '95vh', objectFit: 'contain', borderRadius: 1 }} />
-    </Dialog>
-  );
 }
 
 function Burbuja({ msg, esPropio, primary, onBorrar }) {
@@ -76,20 +60,49 @@ function Burbuja({ msg, esPropio, primary, onBorrar }) {
             <Box
               component="img"
               src={mediaUrl(msg.imagen)}
-              sx={{ display: 'block', maxWidth: 260, maxHeight: 220, objectFit: 'contain', bgcolor: esPropio ? `${primary}cc` : '#f5f0eb' }}
+              alt={`Imagen de ${nombreDe(msg.autor)}`}
+              sx={{
+                display: 'block',
+                maxWidth: 260,
+                maxHeight: 220,
+                objectFit: 'contain',
+                bgcolor: esPropio ? `${primary}cc` : '#f5f0eb',
+              }}
             />
           </Box>
         )}
         {msg.contenido && (
-          <Typography variant="body2" sx={{ px: msg.imagen ? 1 : 0, pb: msg.imagen ? 0.5 : 0, lineHeight: 1.5, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+          <Typography
+            variant="body2"
+            sx={{
+              px: msg.imagen ? 1 : 0,
+              pb: msg.imagen ? 0.5 : 0,
+              lineHeight: 1.5,
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'break-word',
+            }}
+          >
             {msg.contenido}
           </Typography>
         )}
-        <Lightbox src={mediaUrl(msg.imagen)} open={lightbox} onClose={() => setLightbox(false)} />
+        <Lightbox
+          src={mediaUrl(msg.imagen)}
+          alt={`Imagen de ${nombreDe(msg.autor)}`}
+          open={lightbox}
+          onClose={() => setLightbox(false)}
+        />
       </Box>
 
       {/* Tiempo + borrar */}
-      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: esPropio ? 'flex-end' : 'flex-start', gap: 0.25, minWidth: 36 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: esPropio ? 'flex-end' : 'flex-start',
+          gap: 0.25,
+          minWidth: 36,
+        }}
+      >
         <Typography variant="caption" sx={{ color: 'text.disabled', fontSize: '0.65rem', whiteSpace: 'nowrap' }}>
           {tiempoRelativo(msg.createdAt)}
         </Typography>
@@ -129,7 +142,9 @@ export default function Mensajes({ usuario }) {
     try {
       const { data } = await api.get('/api/mensajes');
       setMensajes(data);
-    } catch {}
+    } catch {
+      /* falla silenciosa: es un poll cada 6s, el siguiente ciclo reintenta */
+    }
   };
 
   useEffect(() => {
@@ -166,7 +181,9 @@ export default function Mensajes({ usuario }) {
     try {
       await api.delete(`/api/mensajes/${id}`);
       setMensajes((prev) => prev.filter((m) => m._id !== id));
-    } catch {}
+    } catch {
+      /* si falla, el mensaje sigue visible — el usuario puede reintentar */
+    }
   };
 
   // Hora de reset
@@ -179,7 +196,9 @@ export default function Mensajes({ usuario }) {
     <Box sx={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 32px)', maxHeight: 900 }}>
       {/* Header */}
       <Box sx={{ pb: 1.5, borderBottom: `1px solid ${primary}20`, mb: 1 }}>
-        <Typography variant="overline" sx={{ color: primary }}>Solo para los dos</Typography>
+        <Typography variant="overline" sx={{ color: primary }}>
+          Solo para los dos
+        </Typography>
         <Typography variant="h4">Mensajes</Typography>
         <Typography variant="caption" color="text.secondary">
           La conversación se borra cada día a medianoche · próximo reset {horaReset}
@@ -191,32 +210,45 @@ export default function Mensajes({ usuario }) {
         {mensajes.length === 0 && (
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
             <Typography color="text.secondary" sx={{ textAlign: 'center' }}>
-              Aún no hay mensajes hoy.<br />¡Empieza la conversación!
+              Aún no hay mensajes hoy.
+              <br />
+              ¡Empieza la conversación!
             </Typography>
           </Box>
         )}
         {mensajes.map((msg) => (
-          <Burbuja
-            key={msg._id}
-            msg={msg}
-            esPropio={msg.autor === usuario}
-            primary={primary}
-            onBorrar={borrar}
-          />
+          <Burbuja key={msg._id} msg={msg} esPropio={msg.autor === usuario} primary={primary} onBorrar={borrar} />
         ))}
         <div ref={bottomRef} />
       </Box>
 
       {/* Preview archivo seleccionado */}
       {archivo && (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 1, py: 0.5, bgcolor: `${primary}0d`, borderRadius: 1, mb: 0.5 }}>
-          <Typography variant="caption" sx={{ flex: 1 }} noWrap>{archivo.name}</Typography>
-          <IconButton size="small" onClick={() => setArchivo(null)}><CloseIcon fontSize="small" /></IconButton>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+            px: 1,
+            py: 0.5,
+            bgcolor: `${primary}0d`,
+            borderRadius: 1,
+            mb: 0.5,
+          }}
+        >
+          <Typography variant="caption" sx={{ flex: 1 }} noWrap>
+            {archivo.name}
+          </Typography>
+          <IconButton size="small" onClick={() => setArchivo(null)}>
+            <CloseIcon fontSize="small" />
+          </IconButton>
         </Box>
       )}
 
       {error && (
-        <Typography variant="caption" color="error" sx={{ px: 1, pb: 0.5 }}>{error}</Typography>
+        <Typography variant="caption" color="error" sx={{ px: 1, pb: 0.5 }}>
+          {error}
+        </Typography>
       )}
 
       {/* Input */}
@@ -248,11 +280,14 @@ export default function Mensajes({ usuario }) {
           fullWidth
           multiline
           maxRows={4}
-          placeholder={`Escríbele a ${OTROS[usuario === 'karol' ? 'enrique' : 'karol']}…`}
+          placeholder={`Escríbele a ${NOMBRES[otroUsuario(usuario)]}…`}
           value={texto}
           onChange={(e) => setTexto(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); enviar(); }
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              enviar();
+            }
           }}
           variant="outlined"
           size="small"
@@ -261,7 +296,13 @@ export default function Mensajes({ usuario }) {
         <IconButton
           type="submit"
           disabled={(!texto.trim() && !archivo) || enviando}
-          sx={{ bgcolor: primary, color: '#fff', mb: 0.5, '&:hover': { bgcolor: primary, opacity: 0.88 }, '&.Mui-disabled': { bgcolor: 'action.disabledBackground' } }}
+          sx={{
+            bgcolor: primary,
+            color: '#fff',
+            mb: 0.5,
+            '&:hover': { bgcolor: primary, opacity: 0.88 },
+            '&.Mui-disabled': { bgcolor: 'action.disabledBackground' },
+          }}
         >
           {enviando ? <CircularProgress size={20} color="inherit" /> : <SendIcon />}
         </IconButton>

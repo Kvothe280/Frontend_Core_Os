@@ -29,7 +29,9 @@ export default function ValeEspecialCard({ onCanjeado }) {
 
   const cargar = () => api.get('/api/vale-especial-mes').then(({ data }) => setVem(data));
 
-  useEffect(() => { cargar(); }, []);
+  useEffect(() => {
+    cargar();
+  }, []);
 
   const canjear = async () => {
     setCanjeando(true);
@@ -38,8 +40,11 @@ export default function ValeEspecialCard({ onCanjeado }) {
       setCanjeado(true);
       await cargar();
       onCanjeado?.();
-    } catch { /* ignore */ }
-    finally { setCanjeando(false); }
+    } catch {
+      /* ignore */
+    } finally {
+      setCanjeando(false);
+    }
   };
 
   if (!vem) return null;
@@ -48,27 +53,25 @@ export default function ValeEspecialCard({ onCanjeado }) {
   const yaCanjeado = vem.estado === 'canjeado';
   const bloqueado = !abierto && !yaCanjeado;
 
-  const titulo = abierto || yaCanjeado ? (vem.titulo || 'Vale especial') : 'Vale especial del mes';
+  const titulo = abierto || yaCanjeado ? vem.titulo || 'Vale especial' : 'Vale especial del mes';
 
   // ── Chip label y color ──
   const chipProps = bloqueado
     ? { label: 'pendiente', color: 'default' }
     : yaCanjeado
-    ? { label: 'usado', color: 'default' }
-    : vem.estado === 'compensacion'
-    ? { label: 'compensación', color: 'warning' }
-    : vem.estado === 'inutilizado'
-    ? { label: 'inutilizado', color: 'error' }
-    : { label: 'disponible', color: 'success' };
+      ? { label: 'usado', color: 'default' }
+      : vem.estado === 'compensacion'
+        ? { label: 'compensación', color: 'warning' }
+        : vem.estado === 'inutilizado'
+          ? { label: 'inutilizado', color: 'error' }
+          : { label: 'disponible', color: 'success' };
 
   return (
     <>
       <Card
         sx={{
           overflow: 'hidden',
-          border: abierto
-            ? `1px solid ${primary}50`
-            : `1px solid rgba(111, 78, 55, 0.18)`,
+          border: abierto ? `1px solid ${primary}50` : `1px solid rgba(111, 78, 55, 0.18)`,
           background: '#fff',
           transition: 'transform 0.2s ease, box-shadow 0.2s ease',
           ...(!bloqueado && {
@@ -81,16 +84,21 @@ export default function ValeEspecialCard({ onCanjeado }) {
       >
         <CardActionArea onClick={() => !bloqueado && setDrawerOpen(true)} disabled={bloqueado}>
           {/* Header visual */}
-          <Box sx={{
-            height: 120,
-            bgcolor: bloqueado ? '#d9cfc4' : abierto ? `${primary}18` : '#ebe2d6',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            position: 'relative',
-          }}>
-            {bloqueado
-              ? <LockIcon sx={{ fontSize: 40, color: '#999' }} />
-              : <CardGiftcardIcon sx={{ fontSize: 40, color: primary, opacity: 0.6 }} />
-            }
+          <Box
+            sx={{
+              height: 120,
+              bgcolor: bloqueado ? '#d9cfc4' : abierto ? `${primary}18` : '#ebe2d6',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              position: 'relative',
+            }}
+          >
+            {bloqueado ? (
+              <LockIcon sx={{ fontSize: 40, color: '#999' }} />
+            ) : (
+              <CardGiftcardIcon sx={{ fontSize: 40, color: primary, opacity: 0.6 }} />
+            )}
             <Chip
               size="small"
               label={chipProps.label}
@@ -143,11 +151,15 @@ export default function ValeEspecialCard({ onCanjeado }) {
       >
         <Box>
           {/* Banner superior */}
-          <Box sx={{
-            height: 180,
-            bgcolor: abierto ? `${primary}1a` : '#ebe2d6',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
+          <Box
+            sx={{
+              height: 180,
+              bgcolor: abierto ? `${primary}1a` : '#ebe2d6',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
             <CardGiftcardIcon sx={{ fontSize: 72, color: primary, opacity: 0.5 }} />
           </Box>
 
@@ -177,7 +189,11 @@ export default function ValeEspecialCard({ onCanjeado }) {
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                   {vem.fechaCanje
-                    ? new Date(vem.fechaCanje).toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' })
+                    ? new Date(vem.fechaCanje).toLocaleDateString('es-MX', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric',
+                      })
                     : 'Hasta el próximo mes.'}
                 </Typography>
               </Box>

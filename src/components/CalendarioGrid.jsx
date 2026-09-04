@@ -1,28 +1,11 @@
 import { useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import { TIPO_COLOR } from '../constants/calendarioTipos';
 
-export const TIPO_COLOR = {
-  vale_canjeado:  null,           // usa primary del tema
-  recuerdo:       '#a67c52',
-  cita_registrada:'#43a047',
-  carta:          '#8e44ad',
-  cita_confirmada:'#1976d2',
-  cita_pendiente: '#f57c00',
-};
+const DIAS_SEMANA = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
-export const TIPO_LABEL = {
-  vale_canjeado:   'Vale canjeado',
-  recuerdo:        'Recuerdo',
-  cita_registrada: 'Cita',
-  carta:           'Carta',
-  cita_confirmada: 'Cita confirmada',
-  cita_pendiente:  'Cita pendiente',
-};
-
-const DIAS_SEMANA = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
-
-export function diaStr(date, d) {
+function diaStr(date, d) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
 }
 
@@ -51,7 +34,11 @@ export default function CalendarioGrid({ mesRef, eventos, diaSeleccionado, onSel
       {/* Cabecera días de la semana */}
       <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', mb: 0.5 }}>
         {DIAS_SEMANA.map((d) => (
-          <Typography key={d} variant="caption" sx={{ textAlign: 'center', color: 'text.secondary', fontWeight: 600, py: 0.5 }}>
+          <Typography
+            key={d}
+            variant="caption"
+            sx={{ textAlign: 'center', color: 'text.secondary', fontWeight: 600, py: 0.5 }}
+          >
             {d}
           </Typography>
         ))}
@@ -75,14 +62,12 @@ export default function CalendarioGrid({ mesRef, eventos, diaSeleccionado, onSel
                 p: 0.75,
                 borderRadius: 1.5,
                 cursor: 'pointer',
-                border: seleccionado
-                  ? `2px solid ${theme.palette.primary.main}`
-                  : '2px solid transparent',
+                border: seleccionado ? `2px solid ${theme.palette.primary.main}` : '2px solid transparent',
                 background: seleccionado
                   ? `${theme.palette.primary.main}10`
                   : hoyFlag
-                  ? `${theme.palette.primary.main}08`
-                  : theme.palette.background.paper,
+                    ? `${theme.palette.primary.main}08`
+                    : theme.palette.background.paper,
                 '&:hover': { background: `${theme.palette.primary.main}14` },
                 transition: 'all 0.15s',
               }}
@@ -107,7 +92,9 @@ export default function CalendarioGrid({ mesRef, eventos, diaSeleccionado, onSel
                   );
                 })}
                 {evs.length > 6 && (
-                  <Typography variant="caption" sx={{ fontSize: 9, color: 'text.secondary' }}>+{evs.length - 6}</Typography>
+                  <Typography variant="caption" sx={{ fontSize: 9, color: 'text.secondary' }}>
+                    +{evs.length - 6}
+                  </Typography>
                 )}
               </Box>
             </Box>

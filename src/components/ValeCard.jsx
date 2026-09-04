@@ -1,4 +1,3 @@
-import { useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardActionArea from '@mui/material/CardActionArea';
@@ -14,9 +13,7 @@ function etiqueta(vale) {
 }
 
 export default function ValeCard({ vale, onOpen }) {
-  const theme = useTheme();
   const canjeado = vale.estado === 'canjeado';
-  const cifrado = vale.titulo === '[ARCHIVO ENCRIPTADO]';
   const foto = vale.imagen ? mediaUrl(vale.imagen) : '';
 
   return (
@@ -32,7 +29,7 @@ export default function ValeCard({ vale, onOpen }) {
         },
       }}
     >
-      <CardActionArea onClick={onOpen} disabled={cifrado}>
+      <CardActionArea onClick={onOpen}>
         <Box sx={{ position: 'relative' }}>
           {foto ? (
             <CardMedia
@@ -42,7 +39,7 @@ export default function ValeCard({ vale, onOpen }) {
               sx={{ height: 160, objectFit: 'cover', filter: canjeado ? 'grayscale(0.45)' : 'none' }}
             />
           ) : (
-            <Box sx={{ height: 120, bgcolor: cifrado ? '#d9cfc4' : '#ebe2d6' }} />
+            <Box sx={{ height: 120, bgcolor: '#ebe2d6' }} />
           )}
           <Chip
             size="small"
@@ -52,14 +49,12 @@ export default function ValeCard({ vale, onOpen }) {
         </Box>
         <Box sx={{ p: 2 }}>
           <Typography variant="overline" sx={{ color: canjeado ? '#8d8d8d' : 'primary.main' }}>
-            {cifrado ? 'Cifrado' : canjeado ? 'Usado' : 'Disponible'} · {vale.tipo}
+            {canjeado ? 'Usado' : 'Disponible'} · {vale.tipo}
           </Typography>
           <Typography variant="h6">{vale.titulo}</Typography>
-          {!cifrado && (
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-              Abrir panel →
-            </Typography>
-          )}
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+            Abrir panel →
+          </Typography>
         </Box>
       </CardActionArea>
     </Card>

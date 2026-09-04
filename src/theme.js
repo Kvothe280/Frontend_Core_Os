@@ -93,18 +93,18 @@ const temaEnrique = createTheme({
   shape,
   palette: {
     mode: 'light',
-    primary:    { main: '#3E4B8E', light: '#6470B5', dark: '#2B3566' },   // French Blue
-    secondary:  { main: '#3D1534', light: '#7A3A68', dark: '#1F0A1A' },   // Midnight Violet
-    info:       { main: '#A6BCC9', light: '#C8D8E3', dark: '#6E94A6' },   // Powder Blue
+    primary: { main: '#3E4B8E', light: '#6470B5', dark: '#2B3566' }, // French Blue
+    secondary: { main: '#3D1534', light: '#7A3A68', dark: '#1F0A1A' }, // Midnight Violet
+    info: { main: '#A6BCC9', light: '#C8D8E3', dark: '#6E94A6' }, // Powder Blue
     background: {
-      default: '#FFF4EB',   // Seashell — fondo general
-      paper:   '#FEFAF4',   // Seashell + tinte wheat mínimo
+      default: '#FFF4EB', // Seashell — fondo general
+      paper: '#FEFAF4', // Seashell + tinte wheat mínimo
     },
     text: {
-      primary:   '#1A1520',  // near-midnight: legible y cálido a la vez
+      primary: '#1A1520', // near-midnight: legible y cálido a la vez
       secondary: '#5A5478',
     },
-    divider: '#EDD8BC',      // Wheat suave — calidez en los separadores
+    divider: '#EDD8BC', // Wheat suave — calidez en los separadores
   },
   components: {
     MuiCssBaseline: {
@@ -123,18 +123,18 @@ const temaKarol = createTheme({
   shape,
   palette: {
     mode: 'light',
-    primary:    { main: '#DF6D41', light: '#E8916B', dark: '#B5501F' },  // Canyon
-    secondary:  { main: '#AAA648', light: '#C4C070', dark: '#7A7830' },  // Olive Grove
-    info:       { main: '#8DA6CC', light: '#B5C7E0', dark: '#5D7FAA' },  // Morning Sky
+    primary: { main: '#DF6D41', light: '#E8916B', dark: '#B5501F' }, // Canyon
+    secondary: { main: '#AAA648', light: '#C4C070', dark: '#7A7830' }, // Olive Grove
+    info: { main: '#8DA6CC', light: '#B5C7E0', dark: '#5D7FAA' }, // Morning Sky
     background: {
-      default: '#FEF6E4',   // Buttercream tintado — fondo general cálido
-      paper:   '#FFFCF5',   // casi blanco con apenas un soplo de mantequilla
+      default: '#FEF6E4', // Buttercream tintado — fondo general cálido
+      paper: '#FFFCF5', // casi blanco con apenas un soplo de mantequilla
     },
     text: {
-      primary:   '#3B2A1D',
+      primary: '#3B2A1D',
       secondary: '#7A5C44',
     },
-    divider: '#F5E3C0',      // Buttercream — suavísimo
+    divider: '#F5E3C0', // Buttercream — suavísimo
   },
   components: {
     MuiCssBaseline: {

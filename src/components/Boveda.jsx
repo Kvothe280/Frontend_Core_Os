@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { api } from '../api';
@@ -8,7 +7,6 @@ import ValeDrawer from './ValeDrawer.jsx';
 import ValeEspecialCard from './ValeEspecialCard.jsx';
 
 export default function Boveda({ tick }) {
-  const theme = useTheme();
   const [vales, setVales] = useState([]);
   const [seleccionado, setSeleccionado] = useState(null);
   const [tickLocal, setTickLocal] = useState(0);
@@ -17,15 +15,21 @@ export default function Boveda({ tick }) {
     api.get('/api/vales').then(({ data }) => setVales(data.vales || []));
   };
 
-  useEffect(() => { cargar(); }, [tick, tickLocal]);
+  useEffect(() => {
+    cargar();
+  }, [tick, tickLocal]);
 
   const mensuales = vales.filter((v) => v.tipo === 'mensual' && v.estado !== 'canjeado');
   const usados = vales.filter((v) => v.estado === 'canjeado');
 
   return (
     <Box>
-      <Typography variant="overline" sx={{ color: 'primary.main' }}>Solo para ti</Typography>
-      <Typography variant="h3" sx={{ mb: 1 }}>Nuestros Vales</Typography>
+      <Typography variant="overline" sx={{ color: 'primary.main' }}>
+        Solo para ti
+      </Typography>
+      <Typography variant="h3" sx={{ mb: 1 }}>
+        Nuestros Vales
+      </Typography>
 
       {/* Vale especial del mes */}
       <Box sx={{ mb: 3 }}>
@@ -55,7 +59,9 @@ export default function Boveda({ tick }) {
       {/* Usados */}
       {usados.length > 0 && (
         <>
-          <Typography variant="h6" sx={{ mt: 2, mb: 1 }}>Ya usados</Typography>
+          <Typography variant="h6" sx={{ mt: 2, mb: 1 }}>
+            Ya usados
+          </Typography>
           <Box
             sx={{
               display: 'grid',
@@ -74,7 +80,10 @@ export default function Boveda({ tick }) {
         vale={seleccionado}
         open={Boolean(seleccionado)}
         onClose={() => setSeleccionado(null)}
-        onSuccess={() => { setSeleccionado(null); cargar(); }}
+        onSuccess={() => {
+          setSeleccionado(null);
+          cargar();
+        }}
       />
     </Box>
   );

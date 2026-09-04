@@ -63,8 +63,12 @@ export default function ValeDrawer({ vale, open, onClose, onSuccess }) {
         <Box>
           {/* Banner superior */}
           {foto ? (
-            <Box component="img" src={foto} alt={vale.titulo}
-              sx={{ width: '100%', height: 200, objectFit: 'contain', bgcolor: '#f5f0eb' }} />
+            <Box
+              component="img"
+              src={foto}
+              alt={vale.titulo}
+              sx={{ width: '100%', height: 200, objectFit: 'contain', bgcolor: '#f5f0eb' }}
+            />
           ) : (
             <Box sx={{ height: 120, bgcolor: '#ebe2d6' }} />
           )}
@@ -89,7 +93,11 @@ export default function ValeDrawer({ vale, open, onClose, onSuccess }) {
                 </Typography>
                 {vale.detalles_canje?.fecha && (
                   <Typography variant="body2" color="text.secondary">
-                    {new Date(vale.detalles_canje.fecha).toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' })}
+                    {new Date(vale.detalles_canje.fecha).toLocaleDateString('es-MX', {
+                      day: 'numeric',
+                      month: 'long',
+                      year: 'numeric',
+                    })}
                   </Typography>
                 )}
                 {vale.detalles_canje?.notas && (
@@ -110,7 +118,11 @@ export default function ValeDrawer({ vale, open, onClose, onSuccess }) {
                   </Box>
                 ) : (
                   <>
-                    {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+                    {error && (
+                      <Alert severity="error" sx={{ mb: 2 }}>
+                        {error}
+                      </Alert>
+                    )}
                     <TextField
                       label="Fecha en que se usará"
                       type="date"
@@ -131,13 +143,7 @@ export default function ValeDrawer({ vale, open, onClose, onSuccess }) {
                       disabled={canjeando}
                       sx={{ mb: 2 }}
                     />
-                    <Button
-                      fullWidth
-                      variant="contained"
-                      onClick={canjear}
-                      disabled={canjeando}
-                      sx={{ mb: 1 }}
-                    >
+                    <Button fullWidth variant="contained" onClick={canjear} disabled={canjeando} sx={{ mb: 1 }}>
                       {canjeando ? 'Registrando…' : 'Confirmar canje'}
                     </Button>
                   </>

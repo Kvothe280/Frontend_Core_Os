@@ -3,7 +3,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import { mediaUrl } from '../api';
-import { etiquetaTipo } from './Recuerdos.jsx';
+import { etiquetaTipo } from '../constants/recuerdoTipos';
 import '../leafletIcons.js';
 
 const CENTRO_DEFAULT = [19.4326, -99.1332]; // CDMX
@@ -53,7 +53,9 @@ export default function MapaRecuerdos({ items }) {
                     sx={{ width: '100%', maxHeight: 120, objectFit: 'cover', borderRadius: 1, mb: 0.5 }}
                   />
                 )}
-                <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>{item.titulo}</Typography>
+                <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                  {item.titulo}
+                </Typography>
                 {item.ubicacion.nombre && (
                   <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
                     {item.ubicacion.nombre}
@@ -62,7 +64,11 @@ export default function MapaRecuerdos({ items }) {
                 <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
                   {etiquetaTipo(item.tipo)} · {new Date(item.fecha).toLocaleDateString('es-MX')}
                 </Typography>
-                {item.nota && <Typography variant="caption" sx={{ display: 'block', mt: 0.5 }}>{item.nota}</Typography>}
+                {item.nota && (
+                  <Typography variant="caption" sx={{ display: 'block', mt: 0.5 }}>
+                    {item.nota}
+                  </Typography>
+                )}
               </Box>
             </Popup>
           </Marker>

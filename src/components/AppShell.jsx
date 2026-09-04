@@ -28,14 +28,14 @@ import Mensajes from './Mensajes.jsx';
 
 const DRAWER = 268;
 
-export const NAV_ITEMS = [
-  { id: 'panel',      label: 'Inicio',        icon: <DashboardOutlinedIcon /> },
-  { id: 'cartas',     label: 'Cartas',        icon: <MailOutlineIcon /> },
-  { id: 'recuerdos',  label: 'Recuerdos',     icon: <PhotoLibraryOutlinedIcon /> },
-  { id: 'calendario', label: 'Calendario',    icon: <CalendarMonthOutlinedIcon /> },
-  { id: 'mensajes',   label: 'Mensajes',      icon: <ChatBubbleOutlineIcon /> },
-  { id: 'terminal',   label: 'Terminal',      icon: <TerminalIcon /> },
-  { id: 'boveda',     label: 'Nuestros Vales',icon: <CardGiftcardOutlinedIcon /> },
+const NAV_ITEMS = [
+  { id: 'panel', label: 'Inicio', icon: <DashboardOutlinedIcon /> },
+  { id: 'cartas', label: 'Cartas', icon: <MailOutlineIcon /> },
+  { id: 'recuerdos', label: 'Recuerdos', icon: <PhotoLibraryOutlinedIcon /> },
+  { id: 'calendario', label: 'Calendario', icon: <CalendarMonthOutlinedIcon /> },
+  { id: 'mensajes', label: 'Mensajes', icon: <ChatBubbleOutlineIcon /> },
+  { id: 'terminal', label: 'Terminal', icon: <TerminalIcon /> },
+  { id: 'boveda', label: 'Nuestros Vales', icon: <CardGiftcardOutlinedIcon /> },
 ];
 
 export default function AppShell({ usuario, page, setPage, tick, setTick }) {
@@ -44,7 +44,6 @@ export default function AppShell({ usuario, page, setPage, tick, setTick }) {
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100dvh', bgcolor: 'background.default', color: 'text.primary' }}>
-
       {!mobile && (
         <Drawer
           variant="permanent"
@@ -61,10 +60,15 @@ export default function AppShell({ usuario, page, setPage, tick, setTick }) {
           <Box sx={{ px: 1.5, py: 3, display: 'flex', alignItems: 'center', gap: 1.5 }}>
             <AvatarUsuario usuario={usuario} size={44} editable />
             <Box sx={{ minWidth: 0 }}>
-              <Typography variant="overline" sx={{ color: theme.palette.primary.main, letterSpacing: '0.22em', display: 'block', lineHeight: 1.2 }}>
+              <Typography
+                variant="overline"
+                sx={{ color: theme.palette.primary.main, letterSpacing: '0.22em', display: 'block', lineHeight: 1.2 }}
+              >
                 CORE OS
               </Typography>
-              <Typography variant="h6" sx={{ lineHeight: 1.15, fontStyle: 'italic', color: 'primary.main' }}>Nuestro sistema</Typography>
+              <Typography variant="h6" sx={{ lineHeight: 1.15, fontStyle: 'italic', color: 'primary.main' }}>
+                Nuestro sistema
+              </Typography>
             </Box>
           </Box>
           <Typography variant="body2" color="text.secondary" sx={{ px: 1.5, mb: 1 }}>
@@ -76,7 +80,11 @@ export default function AppShell({ usuario, page, setPage, tick, setTick }) {
                 key={item.id}
                 selected={page === item.id}
                 onClick={() => setPage(item.id)}
-                sx={{ borderRadius: 2, mb: 0.5, '&.Mui-selected': { backgroundColor: `${theme.palette.primary.main}1f` } }}
+                sx={{
+                  borderRadius: 2,
+                  mb: 0.5,
+                  '&.Mui-selected': { backgroundColor: `${theme.palette.primary.main}1f` },
+                }}
               >
                 <ListItemIcon sx={{ color: theme.palette.primary.main }}>{item.icon}</ListItemIcon>
                 <ListItemText primary={item.label} />
@@ -115,12 +123,12 @@ export default function AppShell({ usuario, page, setPage, tick, setTick }) {
                 onOpenRecuerdos={() => setPage('recuerdos')}
               />
             )}
-            {page === 'cartas'     && <Cartas usuario={usuario} />}
-            {page === 'recuerdos'  && <Recuerdos onChange={() => setTick((n) => n + 1)} />}
+            {page === 'cartas' && <Cartas usuario={usuario} />}
+            {page === 'recuerdos' && <Recuerdos onChange={() => setTick((n) => n + 1)} />}
             {page === 'calendario' && <Calendario usuario={usuario} />}
-            {page === 'mensajes'   && <Mensajes usuario={usuario} />}
-            {page === 'terminal'   && <Terminal usuario={usuario} />}
-            {page === 'boveda'     && <Boveda tick={tick} />}
+            {page === 'mensajes' && <Mensajes usuario={usuario} />}
+            {page === 'terminal' && <Terminal usuario={usuario} />}
+            {page === 'boveda' && <Boveda tick={tick} />}
           </motion.div>
         </AnimatePresence>
       </Box>
@@ -130,7 +138,11 @@ export default function AppShell({ usuario, page, setPage, tick, setTick }) {
           value={page}
           onChange={(_, v) => setPage(v)}
           sx={{
-            position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1200,
+            position: 'fixed',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            zIndex: 1200,
             borderTop: `1px solid ${theme.palette.primary.main}29`,
             bgcolor: theme.palette.background.paper,
             height: 60,
@@ -142,7 +154,8 @@ export default function AppShell({ usuario, page, setPage, tick, setTick }) {
               value={item.id}
               icon={item.icon}
               sx={{
-                minWidth: 0, px: 0.5,
+                minWidth: 0,
+                px: 0.5,
                 color: page === item.id ? theme.palette.primary.main : 'text.disabled',
                 '&.Mui-selected': { color: theme.palette.primary.main },
               }}

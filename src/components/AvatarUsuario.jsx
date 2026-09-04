@@ -4,8 +4,7 @@ import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import { api, mediaUrl } from '../api';
-
-const NOMBRES = { karol: 'Karol', enrique: 'Enrique' };
+import { NOMBRES } from '../constants/usuarios';
 
 export default function AvatarUsuario({ usuario, size = 40, editable = false, onUploaded }) {
   const [rota, setRota] = useState(false);
@@ -44,7 +43,9 @@ export default function AvatarUsuario({ usuario, size = 40, editable = false, on
     <Box
       component="label"
       sx={{
-        position: 'relative', display: 'inline-flex', cursor: 'pointer',
+        position: 'relative',
+        display: 'inline-flex',
+        cursor: 'pointer',
         '&:hover .avatar-overlay': { opacity: 1 },
       }}
     >
@@ -52,15 +53,22 @@ export default function AvatarUsuario({ usuario, size = 40, editable = false, on
       <Box
         className="avatar-overlay"
         sx={{
-          position: 'absolute', inset: 0, borderRadius: '50%',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          position: 'absolute',
+          inset: 0,
+          borderRadius: '50%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
           bgcolor: 'rgba(0,0,0,0.45)',
-          opacity: subiendo ? 1 : 0, transition: 'opacity 0.15s',
+          opacity: subiendo ? 1 : 0,
+          transition: 'opacity 0.15s',
         }}
       >
-        {subiendo
-          ? <CircularProgress size={size * 0.4} sx={{ color: '#fff' }} />
-          : <Typography sx={{ color: '#fff', fontSize: size * 0.22, fontWeight: 600 }}>Cambiar</Typography>}
+        {subiendo ? (
+          <CircularProgress size={size * 0.4} sx={{ color: '#fff' }} />
+        ) : (
+          <Typography sx={{ color: '#fff', fontSize: size * 0.22, fontWeight: 600 }}>Cambiar</Typography>
+        )}
       </Box>
       <input hidden type="file" accept="image/*" onChange={(e) => subir(e.target.files[0])} />
     </Box>

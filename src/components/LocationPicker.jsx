@@ -10,7 +10,9 @@ const CENTRO_DEFAULT = [19.4326, -99.1332]; // CDMX
 
 function ClickHandler({ onPick }) {
   useMapEvents({
-    click(e) { onPick(e.latlng.lat, e.latlng.lng); },
+    click(e) {
+      onPick(e.latlng.lat, e.latlng.lng);
+    },
   });
   return null;
 }

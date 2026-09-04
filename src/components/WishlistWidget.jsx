@@ -11,10 +11,9 @@ import AddIcon from '@mui/icons-material/Add';
 import Skeleton from '@mui/material/Skeleton';
 import { useApi } from '../hooks/useApi';
 import { api } from '../api';
+import { NOMBRES } from '../constants/usuarios';
 
-const NOMBRES = { karol: 'Karol', enrique: 'Enrique' };
-
-export default function WishlistWidget({ usuario }) {
+export default function WishlistWidget() {
   const theme = useTheme();
   const { data: items, loading, refetch } = useApi('/api/wishlist');
   const [texto, setTexto] = useState('');
@@ -27,7 +26,9 @@ export default function WishlistWidget({ usuario }) {
       await api.post('/api/wishlist', { texto: texto.trim() });
       setTexto('');
       refetch();
-    } finally { setGuardando(false); }
+    } finally {
+      setGuardando(false);
+    }
   };
 
   const toggleHecho = async (item) => {
@@ -47,7 +48,9 @@ export default function WishlistWidget({ usuario }) {
 
   return (
     <Card sx={{ p: 2, border: `1px solid ${theme.palette.primary.main}24` }}>
-      <Typography variant="h6" sx={{ mb: 1.5 }}>Lista de deseos</Typography>
+      <Typography variant="h6" sx={{ mb: 1.5 }}>
+        Lista de deseos
+      </Typography>
 
       {pendientes.length === 0 && hechos.length === 0 && (
         <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5, fontStyle: 'italic' }}>
@@ -58,7 +61,9 @@ export default function WishlistWidget({ usuario }) {
       {pendientes.map((item) => (
         <Box key={item._id} sx={{ display: 'flex', alignItems: 'center', py: 0.25 }}>
           <Checkbox size="small" checked={false} onChange={() => toggleHecho(item)} sx={{ color: 'primary.main' }} />
-          <Typography variant="body2" sx={{ flex: 1 }}>{item.texto}</Typography>
+          <Typography variant="body2" sx={{ flex: 1 }}>
+            {item.texto}
+          </Typography>
           <Typography variant="caption" color="text.secondary" sx={{ mr: 0.5 }}>
             {NOMBRES[item.creadoPor]}
           </Typography>
@@ -73,7 +78,9 @@ export default function WishlistWidget({ usuario }) {
           {hechos.map((item) => (
             <Box key={item._id} sx={{ display: 'flex', alignItems: 'center', py: 0.25, opacity: 0.5 }}>
               <Checkbox size="small" checked onChange={() => toggleHecho(item)} />
-              <Typography variant="body2" sx={{ flex: 1, textDecoration: 'line-through' }}>{item.texto}</Typography>
+              <Typography variant="body2" sx={{ flex: 1, textDecoration: 'line-through' }}>
+                {item.texto}
+              </Typography>
               <IconButton size="small" onClick={() => eliminar(item._id)}>
                 <DeleteOutlineIcon fontSize="small" />
               </IconButton>

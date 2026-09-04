@@ -17,7 +17,10 @@ export default function PropCitaModal({ open, onClose, onCreada }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    if (!form.titulo || !form.fecha) { setError('Título y fecha son obligatorios.'); return; }
+    if (!form.titulo || !form.fecha) {
+      setError('Título y fecha son obligatorios.');
+      return;
+    }
     setLoading(true);
     try {
       const fechaPropuesta = new Date(`${form.fecha}T${form.hora}:00`);
@@ -36,21 +39,60 @@ export default function PropCitaModal({ open, onClose, onCreada }) {
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
       <DialogTitle>Proponer cita</DialogTitle>
       <DialogContent>
-        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-        <TextField label="Título" fullWidth sx={{ mt: 1, mb: 2 }} required value={form.titulo}
-          onChange={(e) => { setError(''); setForm((p) => ({ ...p, titulo: e.target.value })); }} />
-        <TextField label="Nota (opcional)" fullWidth multiline rows={2} sx={{ mb: 2 }} value={form.nota}
-          onChange={(e) => setForm((p) => ({ ...p, nota: e.target.value }))} />
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        )}
+        <TextField
+          label="Título"
+          fullWidth
+          sx={{ mt: 1, mb: 2 }}
+          required
+          value={form.titulo}
+          onChange={(e) => {
+            setError('');
+            setForm((p) => ({ ...p, titulo: e.target.value }));
+          }}
+        />
+        <TextField
+          label="Nota (opcional)"
+          fullWidth
+          multiline
+          rows={2}
+          sx={{ mb: 2 }}
+          value={form.nota}
+          onChange={(e) => setForm((p) => ({ ...p, nota: e.target.value }))}
+        />
         <Box sx={{ display: 'flex', gap: 1.5 }}>
-          <TextField label="Fecha" type="date" fullWidth required value={form.fecha} InputLabelProps={{ shrink: true }}
-            onChange={(e) => { setError(''); setForm((p) => ({ ...p, fecha: e.target.value })); }} />
-          <TextField label="Hora" type="time" sx={{ width: 130 }} required value={form.hora} InputLabelProps={{ shrink: true }}
-            onChange={(e) => setForm((p) => ({ ...p, hora: e.target.value }))} />
+          <TextField
+            label="Fecha"
+            type="date"
+            fullWidth
+            required
+            value={form.fecha}
+            InputLabelProps={{ shrink: true }}
+            onChange={(e) => {
+              setError('');
+              setForm((p) => ({ ...p, fecha: e.target.value }));
+            }}
+          />
+          <TextField
+            label="Hora"
+            type="time"
+            sx={{ width: 130 }}
+            required
+            value={form.hora}
+            InputLabelProps={{ shrink: true }}
+            onChange={(e) => setForm((p) => ({ ...p, hora: e.target.value }))}
+          />
         </Box>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancelar</Button>
-        <Button variant="contained" onClick={handleSubmit} disabled={loading}>Proponer</Button>
+        <Button variant="contained" onClick={handleSubmit} disabled={loading}>
+          Proponer
+        </Button>
       </DialogActions>
     </Dialog>
   );

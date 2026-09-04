@@ -9,9 +9,7 @@ import Skeleton from '@mui/material/Skeleton';
 import MusicNoteIcon from '@mui/icons-material/MusicNote';
 import { useApi } from '../hooks/useApi';
 import { api } from '../api';
-
-const NOMBRES = { karol: 'Karol', enrique: 'Enrique' };
-const OTRO = { karol: 'enrique', enrique: 'karol' };
+import { NOMBRES, otroUsuario } from '../constants/usuarios';
 
 function TrackCard({ entrada, nombre, acento }) {
   if (!entrada) {
@@ -26,21 +24,39 @@ function TrackCard({ entrada, nombre, acento }) {
   }
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-      <Box sx={{ width: 40, height: 40, borderRadius: 2, bgcolor: acento + '20', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Box
+        sx={{
+          width: 40,
+          height: 40,
+          borderRadius: 2,
+          bgcolor: acento + '20',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
         <MusicNoteIcon sx={{ color: acento, fontSize: '1.2rem' }} />
       </Box>
       <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Typography variant="body2" fontWeight={500} noWrap>{entrada.titulo}</Typography>
-        {entrada.artista && <Typography variant="caption" color="text.secondary" noWrap>{entrada.artista}</Typography>}
+        <Typography variant="body2" fontWeight={500} noWrap>
+          {entrada.titulo}
+        </Typography>
+        {entrada.artista && (
+          <Typography variant="caption" color="text.secondary" noWrap>
+            {entrada.artista}
+          </Typography>
+        )}
       </Box>
-      <Typography variant="caption" color="text.secondary">{nombre}</Typography>
+      <Typography variant="caption" color="text.secondary">
+        {nombre}
+      </Typography>
     </Box>
   );
 }
 
 export default function CancionWidget({ usuario }) {
   const theme = useTheme();
-  const otro = OTRO[usuario];
+  const otro = otroUsuario(usuario);
   const { data, loading, refetch } = useApi('/api/canciones');
   const [titulo, setTitulo] = useState('');
   const [artista, setArtista] = useState('');
@@ -55,8 +71,12 @@ export default function CancionWidget({ usuario }) {
       await api.post('/api/canciones', { titulo, artista, url });
       refetch();
       setOpen(false);
-      setTitulo(''); setArtista(''); setUrl('');
-    } finally { setGuardando(false); }
+      setTitulo('');
+      setArtista('');
+      setUrl('');
+    } finally {
+      setGuardando(false);
+    }
   };
 
   if (loading) return <Skeleton variant="rounded" height={110} sx={{ borderRadius: 2 }} />;
@@ -74,14 +94,39 @@ export default function CancionWidget({ usuario }) {
 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
         <TrackCard entrada={data?.[otro]} nombre={NOMBRES[otro]} acento={theme.palette.primary.main} />
-        <TrackCard entrada={miCancion} nombre={NOMBRES[usuario]} acento={theme.palette.secondary?.main || theme.palette.primary.main} />
+        <TrackCard
+          entrada={miCancion}
+          nombre={NOMBRES[usuario]}
+          acento={theme.palette.secondary?.main || theme.palette.primary.main}
+        />
       </Box>
 
       {open && (
-        <Box sx={{ mt: 2, pt: 1.5, borderTop: `1px solid ${theme.palette.divider}`, display: 'flex', flexDirection: 'column', gap: 1 }}>
+        <Box
+          sx={{
+            mt: 2,
+            pt: 1.5,
+            borderTop: `1px solid ${theme.palette.divider}`,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 1,
+          }}
+        >
           <TextField size="small" label="Título" value={titulo} onChange={(e) => setTitulo(e.target.value)} fullWidth />
-          <TextField size="small" label="Artista" value={artista} onChange={(e) => setArtista(e.target.value)} fullWidth />
-          <TextField size="small" label="Link (Spotify / YouTube)" value={url} onChange={(e) => setUrl(e.target.value)} fullWidth />
+          <TextField
+            size="small"
+            label="Artista"
+            value={artista}
+            onChange={(e) => setArtista(e.target.value)}
+            fullWidth
+          />
+          <TextField
+            size="small"
+            label="Link (Spotify / YouTube)"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            fullWidth
+          />
           <Button variant="contained" size="small" onClick={guardar} disabled={!titulo.trim() || guardando}>
             Guardar
           </Button>

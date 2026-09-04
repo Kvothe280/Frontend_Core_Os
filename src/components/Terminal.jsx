@@ -80,8 +80,10 @@ export default function Terminal({ usuario }) {
     cargarPreguntaActiva().catch(() => {
       if (!cancelado) setLogs(['core-os login', 'ERROR: núcleo fuera de línea.']);
     });
-    return () => { cancelado = true; };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => {
+      cancelado = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -119,7 +121,8 @@ export default function Terminal({ usuario }) {
     // Si no hay pregunta activa
     if (!pregunta || pregunta.estado !== 'activa') {
       if (pregunta?.estado === 'carga') pushLog('⏳ Las preguntas abren el día 13.');
-      else if (pregunta?.estado === 'desbloqueado') pushLog('✓ Protocolo completado. Vale especial listo en Nuestros Vales.');
+      else if (pregunta?.estado === 'desbloqueado')
+        pushLog('✓ Protocolo completado. Vale especial listo en Nuestros Vales.');
       else if (pregunta?.estado === 'inutilizado') pushLog('✗ El plazo venció el día 18. Hasta el próximo mes.');
       else pushLog('Sin pregunta activa.');
       return;
@@ -147,24 +150,40 @@ export default function Terminal({ usuario }) {
 
   const inputActivo = !loading && mode === 'preguntas';
 
-  const placeholder = !pregunta ? 'conectando…'
-    : pregunta.estado === 'carga' ? 'preguntas disponibles el día 13…'
-    : pregunta.estado === 'activa' ? 'escribe la respuesta o [pregunta] [admin]…'
-    : pregunta.estado === 'desbloqueado' ? 'protocolo completo — escribe [admin]…'
-    : 'escribe [admin] para gestionar…';
+  const placeholder = !pregunta
+    ? 'conectando…'
+    : pregunta.estado === 'carga'
+      ? 'preguntas disponibles el día 13…'
+      : pregunta.estado === 'activa'
+        ? 'escribe la respuesta o [pregunta] [admin]…'
+        : pregunta.estado === 'desbloqueado'
+          ? 'protocolo completo — escribe [admin]…'
+          : 'escribe [admin] para gestionar…';
 
   return (
     <Box>
-      <Typography variant="overline" sx={{ color: 'primary.main' }}>Acceso</Typography>
-      <Typography variant="h3" sx={{ mb: 1 }}>Terminal</Typography>
+      <Typography variant="overline" sx={{ color: 'primary.main' }}>
+        Acceso
+      </Typography>
+      <Typography variant="h3" sx={{ mb: 1 }}>
+        Terminal
+      </Typography>
       <Typography color="text.secondary" sx={{ mb: 2 }}>
         Seis preguntas del otro. Respóndelas del día 13 al 18 para desbloquear tu vale especial.
       </Typography>
 
       <Box sx={{ display: 'flex', gap: 1, mb: 1.5 }}>
-        <Chip label={`modo: ${mode}`} size="small" sx={{ bgcolor: `${tc.border}18`, color: tc.text, fontFamily: MONO_FONT, fontSize: 11 }} />
+        <Chip
+          label={`modo: ${mode}`}
+          size="small"
+          sx={{ bgcolor: `${tc.border}18`, color: tc.text, fontFamily: MONO_FONT, fontSize: 11 }}
+        />
         {pregunta?.estado === 'activa' && (
-          <Chip label={`${pregunta.respondidas}/${pregunta.totalPreguntas} respondidas`} size="small" variant="outlined" />
+          <Chip
+            label={`${pregunta.respondidas}/${pregunta.totalPreguntas} respondidas`}
+            size="small"
+            variant="outlined"
+          />
         )}
       </Box>
 
@@ -178,14 +197,42 @@ export default function Terminal({ usuario }) {
           <div ref={endRef} />
         </Box>
         {mode !== 'admin' && (
-          <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', gap: 1, p: 1.5, bgcolor: tc.bg, borderTop: `1px solid ${tc.border}40` }}>
+          <Box
+            component="form"
+            onSubmit={handleSubmit}
+            sx={{ display: 'flex', gap: 1, p: 1.5, bgcolor: tc.bg, borderTop: `1px solid ${tc.border}40` }}
+          >
             <TextField
-              fullWidth size="small" placeholder={placeholder} value={input}
-              onChange={(e) => setInput(e.target.value)} autoComplete="off" disabled={!inputActivo}
-              InputProps={{ sx: { fontFamily: MONO_FONT, fontSize: 13.5, '& input': { color: tc.input }, '& fieldset': { borderColor: `${tc.border}60` }, '&:hover fieldset': { borderColor: tc.border }, '&.Mui-focused fieldset': { borderColor: tc.border } } }}
+              fullWidth
+              size="small"
+              placeholder={placeholder}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              autoComplete="off"
+              disabled={!inputActivo}
+              InputProps={{
+                sx: {
+                  fontFamily: MONO_FONT,
+                  fontSize: 13.5,
+                  '& input': { color: tc.input },
+                  '& fieldset': { borderColor: `${tc.border}60` },
+                  '&:hover fieldset': { borderColor: tc.border },
+                  '&.Mui-focused fieldset': { borderColor: tc.border },
+                },
+              }}
             />
-            <Button type="submit" variant="outlined" disabled={!inputActivo}
-              sx={{ fontFamily: MONO_FONT, fontSize: 12, borderColor: `${tc.border}60`, color: tc.text, '&:hover': { borderColor: tc.border, bgcolor: `${tc.border}12` } }}>
+            <Button
+              type="submit"
+              variant="outlined"
+              disabled={!inputActivo}
+              sx={{
+                fontFamily: MONO_FONT,
+                fontSize: 12,
+                borderColor: `${tc.border}60`,
+                color: tc.text,
+                '&:hover': { borderColor: tc.border, bgcolor: `${tc.border}12` },
+              }}
+            >
               ENTER
             </Button>
           </Box>
@@ -194,18 +241,40 @@ export default function Terminal({ usuario }) {
 
       {mode === 'admin' && (
         <Box sx={{ mt: 2, border: `1px solid ${tc.border}30`, borderRadius: 2, overflow: 'hidden' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 2, py: 1.5, bgcolor: tc.bg, borderBottom: `1px solid ${tc.border}30` }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              px: 2,
+              py: 1.5,
+              bgcolor: tc.bg,
+              borderBottom: `1px solid ${tc.border}30`,
+            }}
+          >
             <Typography sx={{ fontFamily: MONO_FONT, fontSize: 12, color: tc.adminTitle }}>
               ⚙ admin — {usuario}
             </Typography>
-            <Button size="small" onClick={() => { setMode('preguntas'); pushLog('[admin] Panel cerrado.'); }}
-              sx={{ fontFamily: MONO_FONT, fontSize: 11, color: tc.text, borderColor: `${tc.border}60`, '&:hover': { borderColor: tc.border } }}
-              variant="outlined">
+            <Button
+              size="small"
+              onClick={() => {
+                setMode('preguntas');
+                pushLog('[admin] Panel cerrado.');
+              }}
+              sx={{
+                fontFamily: MONO_FONT,
+                fontSize: 11,
+                color: tc.text,
+                borderColor: `${tc.border}60`,
+                '&:hover': { borderColor: tc.border },
+              }}
+              variant="outlined"
+            >
               cerrar
             </Button>
           </Box>
           <Box sx={{ p: 2, bgcolor: theme.palette.background.paper, maxHeight: 640, overflowY: 'auto' }}>
-            <AdminPanel usuario={usuario} />
+            <AdminPanel />
           </Box>
         </Box>
       )}

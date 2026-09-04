@@ -8,6 +8,7 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import EventIcon from '@mui/icons-material/Event';
 import { api } from '../api';
+import { nombreDe } from '../constants/usuarios';
 
 function formatFechaCita(fecha) {
   const d = new Date(fecha);
@@ -28,8 +29,11 @@ function CitaPendienteCard({ cita, usuario, onRefresh }) {
       else if (endpoint === 'rechazar') await api.delete(`/api/citas-propuestas/${cita._id}/rechazar`);
       else if (endpoint === 'cancelar') await api.delete(`/api/citas-propuestas/${cita._id}/cancelar`);
       onRefresh?.();
-    } catch { /* ignore */ }
-    finally { setLoading(false); }
+    } catch {
+      /* ignore */
+    } finally {
+      setLoading(false);
+    }
   };
 
   const reagendar = async () => {
@@ -39,25 +43,41 @@ function CitaPendienteCard({ cita, usuario, onRefresh }) {
       await api.put(`/api/citas-propuestas/${cita._id}/reagendar`, { fecha: nuevaFecha });
       setNuevaFecha('');
       onRefresh?.();
-    } catch { /* ignore */ }
-    finally { setReagendando(false); }
+    } catch {
+      /* ignore */
+    } finally {
+      setReagendando(false);
+    }
   };
 
   const esAceptada = cita.estado === 'aceptada';
 
   return (
-    <Card sx={{ p: 2, mb: 1.5, border: `1px solid ${esAceptada ? theme.palette.success.main + '50' : theme.palette.primary.main + '29'}`, background: esAceptada ? `${theme.palette.success.main}08` : 'transparent' }}>
+    <Card
+      sx={{
+        p: 2,
+        mb: 1.5,
+        border: `1px solid ${esAceptada ? theme.palette.success.main + '50' : theme.palette.primary.main + '29'}`,
+        background: esAceptada ? `${theme.palette.success.main}08` : 'transparent',
+      }}
+    >
       <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 1 }}>
         <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.25 }}>{cita.titulo}</Typography>
+          <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.25 }}>
+            {cita.titulo}
+          </Typography>
           <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
             {formatFechaCita(cita.fechaPropuesta)}
           </Typography>
           <Typography variant="caption" color="text.secondary">
-            Propuso: {cita.proponente === 'karol' ? 'Karol' : 'Enrique'}
+            Propuso: {nombreDe(cita.proponente)}
           </Typography>
           {cita.nota && (
-            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5, fontStyle: 'italic' }}>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ display: 'block', mt: 0.5, fontStyle: 'italic' }}
+            >
               {cita.nota}
             </Typography>
           )}
@@ -67,10 +87,14 @@ function CitaPendienteCard({ cita, usuario, onRefresh }) {
 
       <Box sx={{ display: 'flex', gap: 1, mt: 1.5, flexWrap: 'wrap' }}>
         {!esMia && !esAceptada && (
-          <Button size="small" variant="contained" onClick={() => accion('aceptar')} disabled={loading}>Aceptar</Button>
+          <Button size="small" variant="contained" onClick={() => accion('aceptar')} disabled={loading}>
+            Aceptar
+          </Button>
         )}
         {!esMia && !esAceptada && (
-          <Button size="small" color="error" onClick={() => accion('rechazar')} disabled={loading}>Rechazar</Button>
+          <Button size="small" color="error" onClick={() => accion('rechazar')} disabled={loading}>
+            Rechazar
+          </Button>
         )}
         {(esAceptada || esMia) && (
           <Button size="small" variant="outlined" color="inherit" onClick={() => accion('cancelar')} disabled={loading}>
@@ -107,17 +131,14 @@ function CitaPendienteCard({ cita, usuario, onRefresh }) {
 export default function CitasSidebar({ citas, usuario, onRefresh, onProponer }) {
   return (
     <Box sx={{ width: 300, flexShrink: 0 }}>
-      <Button
-        variant="contained"
-        fullWidth
-        startIcon={<EventIcon />}
-        onClick={onProponer}
-        sx={{ mb: 2.5 }}
-      >
+      <Button variant="contained" fullWidth startIcon={<EventIcon />} onClick={onProponer} sx={{ mb: 2.5 }}>
         Proponer cita
       </Button>
 
-      <Typography variant="subtitle2" sx={{ mb: 1, color: 'primary.main', letterSpacing: '0.1em', textTransform: 'uppercase', fontSize: 11 }}>
+      <Typography
+        variant="subtitle2"
+        sx={{ mb: 1, color: 'primary.main', letterSpacing: '0.1em', textTransform: 'uppercase', fontSize: 11 }}
+      >
         Citas activas
       </Typography>
 

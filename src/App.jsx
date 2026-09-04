@@ -7,7 +7,11 @@ import AppShell from './components/AppShell.jsx';
 
 export default function App() {
   const [usuario, setUsuario] = useState(() => {
-    try { return localStorage.getItem(SESSION_KEY) || null; } catch { return null; }
+    try {
+      return localStorage.getItem(SESSION_KEY) || null;
+    } catch {
+      return null;
+    }
   });
   const [page, setPage] = useState('panel');
   const [tick, setTick] = useState(0);
@@ -16,10 +20,11 @@ export default function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      {!usuario
-        ? <LoginScreen onAcceso={(u) => setUsuario(u)} />
-        : <AppShell usuario={usuario} page={page} setPage={setPage} tick={tick} setTick={setTick} />
-      }
+      {!usuario ? (
+        <LoginScreen onAcceso={(u) => setUsuario(u)} />
+      ) : (
+        <AppShell usuario={usuario} page={page} setPage={setPage} tick={tick} setTick={setTick} />
+      )}
     </ThemeProvider>
   );
 }

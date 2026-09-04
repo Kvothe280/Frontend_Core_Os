@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -8,9 +8,9 @@ import Button from '@mui/material/Button';
 import Skeleton from '@mui/material/Skeleton';
 import { api } from '../api';
 import AvatarUsuario from './AvatarUsuario.jsx';
+import { NOMBRES, otroUsuario } from '../constants/usuarios';
 
-const EMOJIS = ['😊','🥰','😌','😄','🤩','😴','😔','😤','😰','🤒','🥺','😭'];
-const NOMBRES = { karol: 'Karol', enrique: 'Enrique' };
+const EMOJIS = ['😊', '🥰', '😌', '😄', '🤩', '😴', '😔', '😤', '😰', '🤒', '🥺', '😭'];
 
 function EmojiPicker({ value, onChange }) {
   return (
@@ -20,8 +20,12 @@ function EmojiPicker({ value, onChange }) {
           key={e}
           onClick={() => onChange(e)}
           sx={{
-            fontSize: '1.5rem', cursor: 'pointer', lineHeight: 1,
-            px: 0.5, py: 0.25, borderRadius: 2,
+            fontSize: '1.5rem',
+            cursor: 'pointer',
+            lineHeight: 1,
+            px: 0.5,
+            py: 0.25,
+            borderRadius: 2,
             border: value === e ? '2px solid' : '2px solid transparent',
             borderColor: value === e ? 'primary.main' : 'transparent',
             transition: 'border-color 0.15s',
@@ -39,12 +43,18 @@ function MoodDisplay({ entrada, nombre, usuario }) {
   const theme = useTheme();
   if (!entrada) {
     return (
-      <Box sx={{
-        display: 'flex', alignItems: 'center', gap: 1,
-        px: 1.5, py: 1, borderRadius: 2,
-        bgcolor: `${theme.palette.primary.main}0a`,
-        border: `1px solid ${theme.palette.primary.main}18`,
-      }}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1,
+          px: 1.5,
+          py: 1,
+          borderRadius: 2,
+          bgcolor: `${theme.palette.primary.main}0a`,
+          border: `1px solid ${theme.palette.primary.main}18`,
+        }}
+      >
         <AvatarUsuario usuario={usuario} size={24} />
         <Typography variant="body2" sx={{ fontStyle: 'italic', color: 'primary.main', opacity: 0.8 }}>
           {nombre} todavía no registró su estado hoy
@@ -55,11 +65,17 @@ function MoodDisplay({ entrada, nombre, usuario }) {
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
       <AvatarUsuario usuario={usuario} size={36} />
-      <Typography fontSize="2rem" lineHeight={1}>{entrada.emoji}</Typography>
+      <Typography fontSize="2rem" lineHeight={1}>
+        {entrada.emoji}
+      </Typography>
       <Box>
-        <Typography variant="body2" fontWeight={500}>{nombre}</Typography>
+        <Typography variant="body2" fontWeight={500}>
+          {nombre}
+        </Typography>
         {entrada.nota && (
-          <Typography variant="caption" color="text.secondary">{entrada.nota}</Typography>
+          <Typography variant="caption" color="text.secondary">
+            {entrada.nota}
+          </Typography>
         )}
       </Box>
     </Box>
@@ -68,23 +84,31 @@ function MoodDisplay({ entrada, nombre, usuario }) {
 
 export default function MoodWidget({ usuario }) {
   const theme = useTheme();
-  const otro = usuario === 'karol' ? 'enrique' : 'karol';
+  const otro = otroUsuario(usuario);
 
   const [mood, setMood] = useState(null);
   const [emoji, setEmoji] = useState('');
   const [nota, setNota] = useState('');
   const [guardando, setGuardando] = useState(false);
 
-  const cargar = () =>
-    api.get('/api/mood').then(({ data }) => {
-      setMood(data);
-      if (data[usuario]) {
-        setEmoji(data[usuario].emoji);
-        setNota(data[usuario].nota || '');
-      }
-    }).catch(() => {});
+  const cargar = useCallback(
+    () =>
+      api
+        .get('/api/mood')
+        .then(({ data }) => {
+          setMood(data);
+          if (data[usuario]) {
+            setEmoji(data[usuario].emoji);
+            setNota(data[usuario].nota || '');
+          }
+        })
+        .catch(() => {}),
+    [usuario]
+  );
 
-  useEffect(() => { cargar(); }, []);
+  useEffect(() => {
+    cargar();
+  }, [cargar]);
 
   const guardar = async () => {
     if (!emoji) return;
@@ -92,7 +116,9 @@ export default function MoodWidget({ usuario }) {
     try {
       await api.post('/api/mood', { emoji, nota });
       await cargar();
-    } finally { setGuardando(false); }
+    } finally {
+      setGuardando(false);
+    }
   };
 
   if (!mood) {
@@ -101,7 +127,9 @@ export default function MoodWidget({ usuario }) {
 
   return (
     <Card sx={{ p: 2, border: `1px solid ${theme.palette.primary.main}24` }}>
-      <Typography variant="h6" sx={{ mb: 0.5 }}>¿Cómo están hoy?</Typography>
+      <Typography variant="h6" sx={{ mb: 0.5 }}>
+        ¿Cómo están hoy?
+      </Typography>
 
       {/* Estado del otro */}
       <Box sx={{ mb: 2 }}>
@@ -126,13 +154,7 @@ export default function MoodWidget({ usuario }) {
           sx={{ mt: 1.5 }}
           onKeyDown={(e) => e.key === 'Enter' && guardar()}
         />
-        <Button
-          variant="contained"
-          size="small"
-          onClick={guardar}
-          disabled={!emoji || guardando}
-          sx={{ mt: 1 }}
-        >
+        <Button variant="contained" size="small" onClick={guardar} disabled={!emoji || guardando} sx={{ mt: 1 }}>
           {mood[usuario] ? 'Actualizar' : 'Registrar'}
         </Button>
       </Box>

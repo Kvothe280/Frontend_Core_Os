@@ -6,11 +6,13 @@ export const api = axios.create({ baseURL: API });
 
 api.interceptors.request.use((config) => {
   try {
-    const token   = localStorage.getItem('coreos_token');
+    const token = localStorage.getItem('coreos_token');
     const usuario = localStorage.getItem('coreos_usuario');
-    if (token)   config.headers['Authorization'] = `Bearer ${token}`;
-    if (usuario) config.headers['x-usuario']     = usuario;
-  } catch {}
+    if (token) config.headers['Authorization'] = `Bearer ${token}`;
+    if (usuario) config.headers['x-usuario'] = usuario;
+  } catch {
+    /* localStorage puede no estar disponible (privado/incógnito) — seguimos sin sesión */
+  }
   return config;
 });
 
@@ -23,7 +25,9 @@ api.interceptors.response.use(
       try {
         localStorage.removeItem('coreos_token');
         localStorage.removeItem('coreos_usuario');
-      } catch {}
+      } catch {
+        /* si no se pudo limpiar, el reload de abajo igual fuerza el re-login */
+      }
       window.location.reload();
     }
     return Promise.reject(err);
