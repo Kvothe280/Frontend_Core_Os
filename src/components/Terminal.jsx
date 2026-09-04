@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import { useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
@@ -7,27 +6,7 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { api } from '../api';
 import AdminPanel from './AdminPanel.jsx';
-
-const MONO_FONT = '"IBM Plex Mono", "Courier New", monospace';
-
-const TC = {
-  enrique: {
-    bg: '#0B0A12',
-    text: '#A8B4F0',
-    input: '#C4CAFE',
-    border: '#3E4B8E',
-    glow: 'rgba(62, 75, 142, 0.22)',
-    adminTitle: '#A8B4F0',
-  },
-  karol: {
-    bg: '#120A05',
-    text: '#F4C896',
-    input: '#FAD9B6',
-    border: '#DF6D41',
-    glow: 'rgba(223, 109, 65, 0.18)',
-    adminTitle: '#DF6D41',
-  },
-};
+import { MONO_FONT, TC } from '../constants/terminalTheme.js';
 
 const AYUDA = [
   '> Comandos:',
@@ -39,7 +18,6 @@ const AYUDA = [
 // ── Terminal principal ─────────────────────────────────────────────────────
 
 export default function Terminal({ usuario }) {
-  const theme = useTheme();
   const tc = TC[usuario] || TC.enrique;
   const mono = { fontFamily: MONO_FONT, color: tc.text };
   const [pregunta, setPregunta] = useState(null);
@@ -273,8 +251,8 @@ export default function Terminal({ usuario }) {
               cerrar
             </Button>
           </Box>
-          <Box sx={{ p: 2, bgcolor: theme.palette.background.paper, maxHeight: 640, overflowY: 'auto' }}>
-            <AdminPanel />
+          <Box sx={{ p: 2, bgcolor: tc.bg, maxHeight: 640, overflowY: 'auto' }}>
+            <AdminPanel tc={tc} />
           </Box>
         </Box>
       )}
