@@ -48,11 +48,10 @@ function proximoMesiversario(fechaInicioStr) {
   return null;
 }
 
-export default function CountdownWidget() {
+export default function CountdownWidget({ fechaInicio }) {
   const theme = useTheme();
   const { data: citas } = useApi('/api/citas-propuestas');
   const { data: fechas, refetch } = useApi('/api/fechas-importantes');
-  const { data: dashboard } = useApi('/api/dashboard');
   const [dialogItem, setDialogItem] = useState(undefined); // undefined=cerrado, null=crear, objeto=editar
 
   const items = useMemo(() => {
@@ -63,7 +62,7 @@ export default function CountdownWidget() {
       })
       .filter((f) => f.dias >= 0);
 
-    const mesiversario = proximoMesiversario(dashboard?.fechaInicio);
+    const mesiversario = proximoMesiversario(fechaInicio);
 
     const hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
@@ -75,7 +74,7 @@ export default function CountdownWidget() {
     return [...fechasItems, ...(mesiversario ? [mesiversario] : []), ...citasItems]
       .sort((a, b) => a.dias - b.dias)
       .slice(0, 5);
-  }, [fechas, citas, dashboard]);
+  }, [fechas, citas, fechaInicio]);
 
   return (
     <Card sx={{ p: 2, border: `1px solid ${theme.palette.primary.main}24` }}>

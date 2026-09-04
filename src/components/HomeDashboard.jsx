@@ -213,7 +213,7 @@ export default function HomeDashboard({ tick, usuario, onOpenCartas, onOpenRecue
       {/* Widgets secundarios */}
       <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, mb: 4 }}>
         <MoodWidget usuario={usuario} />
-        <CountdownWidget />
+        <CountdownWidget fechaInicio={data.fechaInicio} />
       </Box>
       <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, mb: 4 }}>
         <CancionWidget usuario={usuario} />
