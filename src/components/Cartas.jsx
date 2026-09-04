@@ -118,9 +118,11 @@ function Lightbox({ src, alt, open, onClose }) {
 
 // ── Carta en el timeline ───────────────────────────────────────────────────
 
-function CartaTimeline({ carta, isFirst, primaryColor }) {
+function CartaTimeline({ carta, isFirst, primaryColor, onEditar }) {
   const f = fechaFormato(carta);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [imgRota, setImgRota] = useState(false);
+  const imgSrc = carta.imagen ? mediaUrl(carta.imagen) : '';
 
   return (
     <Box sx={{ display: 'flex', gap: 2, mb: 4, position: 'relative' }}>
@@ -145,30 +147,49 @@ function CartaTimeline({ carta, isFirst, primaryColor }) {
             </Typography>
             <Typography variant="h5" sx={{ mt: 0.25 }}>{carta.titulo}</Typography>
           </Box>
-          {f && (
-            <Typography variant="caption" color="text.secondary" sx={{ flexShrink: 0, ml: 2, mt: 0.5 }}>
-              {f}
-            </Typography>
-          )}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: 2, flexShrink: 0 }}>
+            {f && (
+              <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
+                {f}
+              </Typography>
+            )}
+            <Button size="small" onClick={() => onEditar(carta)} sx={{ minWidth: 0, px: 1 }}>
+              Editar
+            </Button>
+          </Box>
         </Box>
 
         {carta.imagen && (
           esPdf(carta.imagen) ? (
             <Box sx={{ mt: 2, mb: 2 }}>
               <iframe
-                src={mediaUrl(carta.imagen)}
+                src={imgSrc}
                 title={carta.titulo}
                 style={{ width: '100%', height: 420, border: `1px solid ${primaryColor}20`, borderRadius: 8 }}
               />
               <Typography variant="caption">
-                <a href={mediaUrl(carta.imagen)} target="_blank" rel="noopener noreferrer">
+                <a href={imgSrc} target="_blank" rel="noopener noreferrer">
                   Abrir en nueva pestaña
                 </a>
               </Typography>
             </Box>
+          ) : imgRota ? (
+            <Box sx={{
+              mt: 2, mb: 1, display: 'flex', alignItems: 'center', gap: 1.5,
+              px: 2, py: 1.5, borderRadius: 2,
+              bgcolor: `${primaryColor}08`, border: `1px solid ${primaryColor}18`,
+            }}>
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+                <rect x="2" y="4" width="14" height="10" rx="2" stroke={primaryColor} strokeWidth="1.3" fill="none"/>
+                <circle cx="6.5" cy="7.5" r="1.2" stroke={primaryColor} strokeWidth="1.1" fill="none"/>
+                <path d="M2 11l4-3.5 3 2.5 2-1.5 4 3" stroke={primaryColor} strokeWidth="1.2" strokeLinecap="round" fill="none"/>
+              </svg>
+              <Typography variant="caption" sx={{ color: primaryColor, fontStyle: 'italic' }}>
+                Imagen no disponible — usa Editar para subirla de nuevo
+              </Typography>
+            </Box>
           ) : (
             <>
-              {/* Miniatura — contain: se ve completa sin recorte */}
               <Box
                 onClick={() => setLightboxOpen(true)}
                 sx={{
@@ -182,8 +203,9 @@ function CartaTimeline({ carta, isFirst, primaryColor }) {
               >
                 <Box
                   component="img"
-                  src={mediaUrl(carta.imagen)}
+                  src={imgSrc}
                   alt=""
+                  onError={() => setImgRota(true)}
                   sx={{ maxWidth: '100%', maxHeight: 300, objectFit: 'contain', display: 'block' }}
                 />
               </Box>
@@ -191,7 +213,7 @@ function CartaTimeline({ carta, isFirst, primaryColor }) {
                 Toca la imagen para verla completa
               </Typography>
               <Lightbox
-                src={mediaUrl(carta.imagen)}
+                src={imgSrc}
                 alt={carta.titulo}
                 open={lightboxOpen}
                 onClose={() => setLightboxOpen(false)}
@@ -210,6 +232,65 @@ function CartaTimeline({ carta, isFirst, primaryColor }) {
   );
 }
 
+// ── Dialog editar carta ────────────────────────────────────────────────────
+
+function DialogEditarCarta({ carta, onClose, onGuardado }) {
+  const [titulo, setTitulo] = useState(carta?.titulo || '');
+  const [cuerpo, setCuerpo] = useState(carta?.cuerpo || '');
+  const [autor, setAutor] = useState(carta?.autor || '');
+  const [para, setPara] = useState(carta?.para || '');
+  const [fecha, setFecha] = useState(carta?.fecha ? new Date(carta.fecha).toISOString().slice(0, 10) : '');
+  const [archivo, setArchivo] = useState(null);
+  const [error, setError] = useState('');
+
+  const guardar = async () => {
+    setError('');
+    try {
+      const form = new FormData();
+      form.append('titulo', titulo);
+      form.append('cuerpo', cuerpo);
+      form.append('autor', autor);
+      form.append('para', para);
+      if (fecha) form.append('fecha', fecha);
+      if (archivo) form.append('archivo', archivo);
+      await api.put(`/api/cartas/${carta._id}`, form, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      onGuardado?.();
+      onClose();
+    } catch (err) {
+      setError(err.response?.data?.error || 'No se pudo actualizar.');
+    }
+  };
+
+  return (
+    <Dialog open onClose={onClose} fullWidth maxWidth="sm">
+      <DialogTitle>Editar carta</DialogTitle>
+      <DialogContent>
+        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+        <TextField label="Título" fullWidth margin="normal" value={titulo} onChange={(e) => setTitulo(e.target.value)} required />
+        <TextField label="Autor" fullWidth margin="normal" value={autor} onChange={(e) => setAutor(e.target.value)} required />
+        <TextField label="Para" fullWidth margin="normal" value={para} onChange={(e) => setPara(e.target.value)} />
+        <TextField label="Fecha" type="date" fullWidth margin="normal" InputLabelProps={{ shrink: true }} value={fecha} onChange={(e) => setFecha(e.target.value)} />
+        <TextField label="Contenido" fullWidth margin="normal" multiline minRows={4} value={cuerpo} onChange={(e) => setCuerpo(e.target.value)} />
+        <Box sx={{ mt: 2 }}>
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+            {carta?.imagen ? 'Reemplazar imagen / PDF' : 'Agregar imagen o PDF'}
+          </Typography>
+          <Button variant="outlined" component="label" size="small">
+            {archivo ? archivo.name : 'Elegir archivo'}
+            <input type="file" accept="image/*,.pdf" hidden onChange={(e) => setArchivo(e.target.files[0] || null)} />
+          </Button>
+        </Box>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose}>Cancelar</Button>
+        <Button variant="contained" onClick={guardar}>Guardar</Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
+
 // ── Página principal ───────────────────────────────────────────────────────
 
 export default function Cartas({ usuario }) {
@@ -218,6 +299,7 @@ export default function Cartas({ usuario }) {
   const [cartas, setCartas] = useState([]);
   const [activaId, setActivaId] = useState(null);
   const [formOpen, setFormOpen] = useState(false);
+  const [editando, setEditando] = useState(null);
   const refs = useRef({});
 
   const cargar = () => {
@@ -314,6 +396,7 @@ export default function Cartas({ usuario }) {
                 carta={carta}
                 isFirst={i === cartas.length - 1}
                 primaryColor={primary}
+                onEditar={setEditando}
               />
             </Box>
           ))}
@@ -326,6 +409,14 @@ export default function Cartas({ usuario }) {
         onPublicada={cargar}
         usuario={usuario}
       />
+
+      {editando && (
+        <DialogEditarCarta
+          carta={editando}
+          onClose={() => setEditando(null)}
+          onGuardado={() => { cargar(); setEditando(null); }}
+        />
+      )}
     </Box>
   );
 }

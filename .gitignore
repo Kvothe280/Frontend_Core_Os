@@ -7,7 +7,6 @@ dist/
 # Variables de entorno — NUNCA subir al repo
 .env
 .env.*
-!.env.example
 *.local
 
 # OS

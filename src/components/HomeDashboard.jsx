@@ -4,6 +4,7 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardMedia from '@mui/material/CardMedia';
+import Skeleton from '@mui/material/Skeleton';
 import Typography from '@mui/material/Typography';
 import {
   Area,
@@ -15,9 +16,13 @@ import {
   YAxis,
 } from 'recharts';
 import { api, mediaUrl } from '../api';
+import CancionWidget from './CancionWidget.jsx';
+import CountdownWidget from './CountdownWidget.jsx';
+import MoodWidget from './MoodWidget.jsx';
 import ValeCard from './ValeCard.jsx';
 import ValeDrawer from './ValeDrawer.jsx';
 import ValeEspecialCard from './ValeEspecialCard.jsx';
+import WishlistWidget from './WishlistWidget.jsx';
 
 function MetricCard({ label, value, hint, onClick }) {
   const theme = useTheme();
@@ -28,7 +33,7 @@ function MetricCard({ label, value, hint, onClick }) {
         p: 2.5,
         cursor: onClick ? 'pointer' : 'default',
         border: `1px solid ${theme.palette.primary.main}29`,
-        background: '#fff',
+        background: theme.palette.background.paper,
       }}
     >
       <Typography variant="overline" sx={{ color: 'primary.main' }}>
@@ -61,6 +66,14 @@ function RecuerdoImagen({ imagen, titulo }) {
   );
 }
 
+function saludoDinamico(usuario, diasJuntos) {
+  const hora = new Date().getHours();
+  const nombre = usuario === 'karol' ? 'Karol' : 'Enrique';
+  if (hora < 12) return `Buenos días, ${nombre}`;
+  if (hora < 19) return `Buenas tardes, ${nombre}`;
+  return `Buenas noches, ${nombre}`;
+}
+
 export default function HomeDashboard({ tick, usuario, onOpenCartas, onOpenRecuerdos }) {
   const theme = useTheme();
   const [data, setData] = useState(null);
@@ -90,9 +103,19 @@ export default function HomeDashboard({ tick, usuario, onOpenCartas, onOpenRecue
 
   if (!data) {
     return (
-      <Typography color="text.secondary" sx={{ mt: 4 }}>
-        Cargando todo lo nuestro…
-      </Typography>
+      <Box>
+        <Skeleton variant="text" width={120} height={20} sx={{ mb: 0.5 }} />
+        <Skeleton variant="text" width={200} height={40} sx={{ mb: 1 }} />
+        <Skeleton variant="text" width={380} height={20} sx={{ mb: 3 }} />
+        <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(4, 1fr)' }, mb: 3 }}>
+          {[0,1,2,3].map((i) => <Skeleton key={i} variant="rounded" height={100} sx={{ borderRadius: 2 }} />)}
+        </Box>
+        <Skeleton variant="rounded" height={280} sx={{ borderRadius: 2, mb: 4 }} />
+        <Skeleton variant="text" width={140} height={30} sx={{ mb: 2 }} />
+        <Box sx={{ display: 'grid', gap: 1.5, gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(6, 1fr)' } }}>
+          {[0,1,2,3,4,5].map((i) => <Skeleton key={i} variant="rounded" height={160} sx={{ borderRadius: 2 }} />)}
+        </Box>
+      </Box>
     );
   }
 
@@ -101,13 +124,15 @@ export default function HomeDashboard({ tick, usuario, onOpenCartas, onOpenRecue
   return (
     <Box>
       <Typography variant="overline" sx={{ color: 'primary.main', letterSpacing: '0.18em' }}>
-        Hola, {usuario === 'karol' ? 'Karol' : 'Enrique'}
+        {saludoDinamico(usuario)}
       </Typography>
       <Typography variant="h3" sx={{ mb: 1 }}>
         Nuestro panel
       </Typography>
-      <Typography color="text.secondary" sx={{ mb: 3, maxWidth: 640 }}>
-        Desde el 18 de febrero de 2026 todo quedó aquí guardado. Las cartas, los recuerdos y lo que construimos juntos.
+      <Typography sx={{ mb: 3, maxWidth: 640, fontFamily: '"Cormorant Garamond", Georgia, serif', fontStyle: 'italic', fontSize: '1.1rem', color: 'text.secondary' }}>
+        {metricas.diasJuntos === 1
+          ? 'El primer día de todo lo nuestro.'
+          : `${metricas.diasJuntos} días construyendo algo bonito juntos.`}
       </Typography>
 
       {/* Métricas */}
@@ -162,6 +187,16 @@ export default function HomeDashboard({ tick, usuario, onOpenCartas, onOpenRecue
         </ResponsiveContainer>
       </Card>
 
+      {/* Widgets secundarios */}
+      <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, mb: 4 }}>
+        <MoodWidget usuario={usuario} />
+        <CountdownWidget />
+      </Box>
+      <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, mb: 4 }}>
+        <CancionWidget usuario={usuario} />
+        <WishlistWidget usuario={usuario} />
+      </Box>
+
       {/* Vales */}
       <Typography variant="h5" sx={{ mb: 0.5 }}>
         Tus vales
@@ -206,7 +241,18 @@ export default function HomeDashboard({ tick, usuario, onOpenCartas, onOpenRecue
           </Card>
         ))}
         {(!data.recuerdosRecientes || data.recuerdosRecientes.length === 0) && (
-          <Typography color="text.secondary">Aún no hay recuerdos. Agréguenlos en la pestaña Recuerdos.</Typography>
+          <Box sx={{ gridColumn: '1/-1', py: 4, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5 }}>
+            <svg width="56" height="56" viewBox="0 0 56 56" fill="none" aria-hidden="true">
+              <rect width="56" height="56" rx="16" fill={theme.palette.primary.main + '14'} />
+              <rect x="12" y="16" width="32" height="24" rx="4" stroke={theme.palette.primary.main} strokeWidth="1.8" fill="none"/>
+              <circle cx="22" cy="24" r="3" stroke={theme.palette.primary.main} strokeWidth="1.6" fill="none"/>
+              <path d="M12 33l8-7 6 5 5-4 7 6" stroke={theme.palette.primary.main} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+            </svg>
+            <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center' }}>
+              Todavía no hay recuerdos guardados.
+            </Typography>
+            <Button size="small" onClick={onOpenRecuerdos}>Agregar el primero</Button>
+          </Box>
         )}
       </Box>
 

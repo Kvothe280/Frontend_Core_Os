@@ -24,12 +24,12 @@ const typography = {
     lineHeight: 1.25,
   },
   h6: {
-    // DM Sans — puente entre serif display y body
-    fontFamily: '"DM Sans", system-ui, sans-serif',
-    fontWeight: 600,
-    fontSize: '1.05rem',
-    lineHeight: 1.4,
-    letterSpacing: '0.01em',
+    fontFamily: '"Cormorant Garamond", Georgia, serif',
+    fontWeight: 500,
+    fontSize: '1.15rem',
+    lineHeight: 1.3,
+    fontStyle: 'italic',
+    letterSpacing: '0.005em',
   },
   subtitle1: {
     fontWeight: 500,
@@ -68,7 +68,7 @@ function componentOverrides(primary) {
       styleOverrides: {
         root: {
           backgroundImage: 'none',
-          boxShadow: '0 1px 4px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04)',
+          boxShadow: `0 1px 6px ${primary}14, 0 1px 2px ${primary}08`,
         },
       },
     },

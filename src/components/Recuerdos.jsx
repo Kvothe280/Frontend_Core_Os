@@ -15,13 +15,15 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import CloseIcon from '@mui/icons-material/Close';
 import { api, mediaUrl } from '../api';
+import LocationPicker from './LocationPicker.jsx';
+import MapaRecuerdos from './MapaRecuerdos.jsx';
 
 const TIPOS = [
   { value: 'recuerdo', label: 'Recuerdo' },
   { value: 'cita', label: 'Cita' },
 ];
 
-function etiquetaTipo(tipo) {
+export function etiquetaTipo(tipo) {
   if (tipo === 'cafe' || tipo === 'cita') return 'Cita';
   return TIPOS.find((t) => t.value === tipo)?.label ?? tipo;
 }
@@ -113,13 +115,15 @@ function RecuerdoCard({ item, onEditar, onBorrar }) {
 
 function GaleriaCard({ item }) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [imgRota, setImgRota] = useState(false);
+  const imgSrc = item.imagen ? mediaUrl(item.imagen) : '';
 
   return (
     <Card sx={{ overflow: 'hidden', border: '1px solid rgba(111,78,55,0.12)' }}>
       <Box
-        onClick={() => setLightboxOpen(true)}
+        onClick={() => imgSrc && !imgRota && setLightboxOpen(true)}
         sx={{
-          cursor: 'zoom-in',
+          cursor: imgSrc && !imgRota ? 'zoom-in' : 'default',
           bgcolor: '#f5f0eb',
           display: 'flex',
           justifyContent: 'center',
@@ -128,12 +132,24 @@ function GaleriaCard({ item }) {
           overflow: 'hidden',
         }}
       >
-        <Box
-          component="img"
-          src={mediaUrl(item.imagen)}
-          alt={item.titulo}
-          sx={{ maxWidth: '100%', maxHeight: 200, objectFit: 'contain', display: 'block' }}
-        />
+        {imgSrc && !imgRota ? (
+          <Box
+            component="img"
+            src={imgSrc}
+            alt={item.titulo}
+            onError={() => setImgRota(true)}
+            sx={{ maxWidth: '100%', maxHeight: 200, objectFit: 'contain', display: 'block' }}
+          />
+        ) : (
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5, opacity: 0.35 }}>
+            <svg width="36" height="36" viewBox="0 0 36 36" fill="none" aria-hidden="true">
+              <rect x="4" y="8" width="28" height="20" rx="3" stroke="#8b7355" strokeWidth="1.6" fill="none"/>
+              <circle cx="13" cy="16" r="2.5" stroke="#8b7355" strokeWidth="1.4" fill="none"/>
+              <path d="M4 22l8-7 5 4 4-3 7 6" stroke="#8b7355" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+            </svg>
+            <Typography variant="caption" sx={{ color: '#8b7355', fontSize: '0.65rem' }}>Sin imagen</Typography>
+          </Box>
+        )}
       </Box>
       <Box sx={{ p: 1.5 }}>
         <Typography variant="caption" sx={{ color: 'primary.main', display: 'block' }}>{etiquetaTipo(item.tipo)}</Typography>
@@ -145,12 +161,14 @@ function GaleriaCard({ item }) {
           </Typography>
         )}
       </Box>
-      <Lightbox
-        src={mediaUrl(item.imagen)}
-        alt={item.titulo}
-        open={lightboxOpen}
-        onClose={() => setLightboxOpen(false)}
-      />
+      {imgSrc && !imgRota && (
+        <Lightbox
+          src={imgSrc}
+          alt={item.titulo}
+          open={lightboxOpen}
+          onClose={() => setLightboxOpen(false)}
+        />
+      )}
     </Card>
   );
 }
@@ -163,6 +181,7 @@ function FormularioAgregar({ onAgregado }) {
   const [tipo, setTipo] = useState('recuerdo');
   const [fecha, setFecha] = useState('');
   const [archivo, setArchivo] = useState(null);
+  const [ubicacion, setUbicacion] = useState(null);
   const [error, setError] = useState('');
 
   const agregar = async (e) => {
@@ -174,12 +193,14 @@ function FormularioAgregar({ onAgregado }) {
     form.append('tipo', tipo);
     if (fecha) form.append('fecha', fecha);
     if (archivo) form.append('archivo', archivo);
+    if (ubicacion) form.append('ubicacion', JSON.stringify(ubicacion));
     try {
       await api.post('/api/recuerdos', form);
       setTitulo('');
       setNota('');
       setFecha('');
       setArchivo(null);
+      setUbicacion(null);
       onAgregado?.();
     } catch (err) {
       setError(err.response?.data?.error || 'No se pudo guardar.');
@@ -229,6 +250,9 @@ function FormularioAgregar({ onAgregado }) {
         value={nota}
         onChange={(e) => setNota(e.target.value)}
       />
+      <Box sx={{ mt: 2, mb: 2 }}>
+        <LocationPicker value={ubicacion} onChange={setUbicacion} />
+      </Box>
       <Button type="submit" variant="contained">
         Guardar
       </Button>
@@ -245,12 +269,23 @@ function DialogEditar({ item, onClose, onGuardado }) {
   const [fecha, setFecha] = useState(
     item?.fecha ? new Date(item.fecha).toISOString().slice(0, 10) : ''
   );
+  const [archivo, setArchivo] = useState(null);
+  const [ubicacion, setUbicacion] = useState(item?.ubicacion || null);
   const [error, setError] = useState('');
 
   const guardar = async () => {
     setError('');
     try {
-      await api.put(`/api/recuerdos/${item._id}`, { titulo, nota, tipo, fecha });
+      const form = new FormData();
+      form.append('titulo', titulo);
+      form.append('nota', nota);
+      form.append('tipo', tipo);
+      if (fecha) form.append('fecha', fecha);
+      if (archivo) form.append('archivo', archivo);
+      form.append('ubicacion', ubicacion ? JSON.stringify(ubicacion) : '');
+      await api.put(`/api/recuerdos/${item._id}`, form, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
       onGuardado?.();
       onClose();
     } catch (err) {
@@ -271,6 +306,18 @@ function DialogEditar({ item, onClose, onGuardado }) {
         </TextField>
         <TextField label="Fecha" type="date" fullWidth margin="normal" InputLabelProps={{ shrink: true }} value={fecha} onChange={(e) => setFecha(e.target.value)} />
         <TextField label="Nota" fullWidth margin="normal" multiline minRows={3} value={nota} onChange={(e) => setNota(e.target.value)} />
+        <Box sx={{ mt: 2 }}>
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+            {item?.imagen ? 'Reemplazar imagen' : 'Agregar imagen'}
+          </Typography>
+          <Button variant="outlined" component="label" size="small">
+            {archivo ? archivo.name : 'Elegir archivo'}
+            <input type="file" accept="image/*" hidden onChange={(e) => setArchivo(e.target.files[0] || null)} />
+          </Button>
+        </Box>
+        <Box sx={{ mt: 2 }}>
+          <LocationPicker value={ubicacion} onChange={setUbicacion} />
+        </Box>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancelar</Button>
@@ -319,6 +366,7 @@ export default function Recuerdos({ onChange }) {
       <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 3, borderBottom: '1px solid rgba(111,78,55,0.15)' }} textColor="primary" indicatorColor="primary">
         <Tab label="Todos" />
         <Tab label={`Galería${conImagen.length ? ` (${conImagen.length})` : ''}`} />
+        <Tab label="Mapa" />
         <Tab label="Agregar" />
       </Tabs>
 
@@ -345,7 +393,9 @@ export default function Recuerdos({ onChange }) {
         </Box>
       )}
 
-      {tab === 2 && <FormularioAgregar onAgregado={alAgregar} />}
+      {tab === 2 && <MapaRecuerdos items={items} />}
+
+      {tab === 3 && <FormularioAgregar onAgregado={alAgregar} />}
 
       {editando && <DialogEditar item={editando} onClose={() => setEditando(null)} onGuardado={alEditar} />}
     </Box>
