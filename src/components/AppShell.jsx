@@ -103,7 +103,6 @@ export default function AppShell({ usuario, page, setPage, tick, setTick }) {
           pb: { xs: '76px', md: 3 },
           bgcolor: 'background.default',
           color: 'text.primary',
-          overflow: 'hidden',
         }}
       >
         <AnimatePresence mode="wait" initial={false}>
