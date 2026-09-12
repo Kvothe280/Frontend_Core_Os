@@ -1,19 +1,17 @@
 import { useEffect, useState } from 'react';
 import { useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import Skeleton from '@mui/material/Skeleton';
 import Typography from '@mui/material/Typography';
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { api, mediaUrl } from '../api';
+import { api } from '../api';
 import CancionWidget from './CancionWidget.jsx';
 import CountdownWidget from './CountdownWidget.jsx';
+import DashboardVales from './DashboardVales.jsx';
 import LogrosWidget from './LogrosWidget.jsx';
 import MoodWidget from './MoodWidget.jsx';
-import ValeCard from './ValeCard.jsx';
-import ValeDrawer from './ValeDrawer.jsx';
-import ValeEspecialCard from './ValeEspecialCard.jsx';
+import RecuerdosRecientesSection from './RecuerdosRecientesSection.jsx';
 import WishlistWidget from './WishlistWidget.jsx';
 import { nombreDe } from '../constants/usuarios';
 
@@ -42,32 +40,6 @@ function MetricCard({ label, value, hint, onClick }) {
   );
 }
 
-function RecuerdoImagen({ imagen, titulo }) {
-  const [roto, setRoto] = useState(false);
-  const src = imagen ? mediaUrl(imagen) : '';
-  if (!src || roto) return <Box sx={{ height: 140, bgcolor: '#ebe2d6' }} />;
-  return (
-    <Box
-      sx={{
-        height: 140,
-        bgcolor: '#f5f0eb',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        overflow: 'hidden',
-      }}
-    >
-      <Box
-        component="img"
-        src={src}
-        alt={titulo}
-        onError={() => setRoto(true)}
-        sx={{ maxWidth: '100%', maxHeight: 140, objectFit: 'contain', display: 'block' }}
-      />
-    </Box>
-  );
-}
-
 function saludoDinamico(usuario) {
   const hora = new Date().getHours();
   const nombre = nombreDe(usuario);
@@ -80,7 +52,6 @@ export default function HomeDashboard({ tick, usuario, onOpenCartas, onOpenRecue
   const theme = useTheme();
   const [data, setData] = useState(null);
   const [error, setError] = useState('');
-  const [valeSel, setValeSel] = useState(null);
   const [tickLocal, setTickLocal] = useState(0);
 
   const cargar = () => {
@@ -225,93 +196,14 @@ export default function HomeDashboard({ tick, usuario, onOpenCartas, onOpenRecue
       </Box>
 
       {/* Vales */}
-      <Typography variant="h5" sx={{ mb: 0.5 }}>
-        Tus vales
-      </Typography>
-      <Typography color="text.secondary" sx={{ mb: 2 }}>
-        Cuatro mensuales solo para ti, más uno especial que se desbloquea respondiendo las preguntas del mes.
-      </Typography>
-      <Box sx={{ mb: 1.5 }}>
-        <ValeEspecialCard onCanjeado={() => setTickLocal((n) => n + 1)} />
-      </Box>
-      <Box
-        sx={{
-          display: 'grid',
-          gap: 2,
-          gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', lg: 'repeat(4, 1fr)' },
-          mb: 4,
-        }}
-      >
-        {(data.valesMensuales || []).map((vale) => (
-          <ValeCard key={vale._id} vale={vale} onOpen={() => setValeSel(vale)} />
-        ))}
-      </Box>
+      <DashboardVales
+        valesMensuales={data.valesMensuales}
+        onCanjeadoEspecial={() => setTickLocal((n) => n + 1)}
+        cargar={cargar}
+      />
 
       {/* Recuerdos recientes */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
-        <Typography variant="h5">Recuerdos recientes</Typography>
-        <Button onClick={onOpenRecuerdos}>Ver todos / agregar</Button>
-      </Box>
-      <Box
-        sx={{
-          display: 'grid',
-          gap: 1.5,
-          gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(6, 1fr)' },
-        }}
-      >
-        {(data.recuerdosRecientes || []).map((item) => (
-          <Card key={item._id} sx={{ overflow: 'hidden', border: `1px solid ${theme.palette.primary.main}24` }}>
-            <RecuerdoImagen imagen={item.imagen} titulo={item.titulo} />
-            <Typography variant="caption" sx={{ display: 'block', p: 1 }}>
-              {item.titulo}
-            </Typography>
-          </Card>
-        ))}
-        {(!data.recuerdosRecientes || data.recuerdosRecientes.length === 0) && (
-          <Box
-            sx={{ gridColumn: '1/-1', py: 4, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5 }}
-          >
-            <svg width="56" height="56" viewBox="0 0 56 56" fill="none" aria-hidden="true">
-              <rect width="56" height="56" rx="16" fill={theme.palette.primary.main + '14'} />
-              <rect
-                x="12"
-                y="16"
-                width="32"
-                height="24"
-                rx="4"
-                stroke={theme.palette.primary.main}
-                strokeWidth="1.8"
-                fill="none"
-              />
-              <circle cx="22" cy="24" r="3" stroke={theme.palette.primary.main} strokeWidth="1.6" fill="none" />
-              <path
-                d="M12 33l8-7 6 5 5-4 7 6"
-                stroke={theme.palette.primary.main}
-                strokeWidth="1.6"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                fill="none"
-              />
-            </svg>
-            <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center' }}>
-              Todavía no hay recuerdos guardados.
-            </Typography>
-            <Button size="small" onClick={onOpenRecuerdos}>
-              Agregar el primero
-            </Button>
-          </Box>
-        )}
-      </Box>
-
-      <ValeDrawer
-        vale={valeSel}
-        open={Boolean(valeSel)}
-        onClose={() => setValeSel(null)}
-        onSuccess={() => {
-          setValeSel(null);
-          cargar();
-        }}
-      />
+      <RecuerdosRecientesSection recuerdosRecientes={data.recuerdosRecientes} onOpenRecuerdos={onOpenRecuerdos} />
     </Box>
   );
 }
