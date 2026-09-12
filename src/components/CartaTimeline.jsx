@@ -104,6 +104,15 @@ export default function CartaTimeline({ carta, isFirst, primaryColor, onEditar }
             <>
               <Box
                 onClick={() => setLightboxOpen(true)}
+                role="button"
+                tabIndex={0}
+                aria-label={`Ver imagen de ${carta.titulo}`}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setLightboxOpen(true);
+                  }
+                }}
                 sx={{
                   mt: 2,
                   mb: 1,

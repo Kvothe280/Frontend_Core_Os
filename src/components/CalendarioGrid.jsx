@@ -57,6 +57,14 @@ export default function CalendarioGrid({ mesRef, eventos, diaSeleccionado, onSel
             <Box
               key={key}
               onClick={() => onSelectDia(seleccionado ? null : key)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onSelectDia(seleccionado ? null : key);
+                }
+              }}
               sx={{
                 minHeight: 64,
                 p: 0.75,

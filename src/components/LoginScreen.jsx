@@ -162,6 +162,18 @@ function PanelPerfil({ config, activo, inactivo, onSelect, onAcceso, mobile }) {
   return (
     <Box
       onClick={!activo && !inactivo ? onSelect : undefined}
+      role={!activo && !inactivo ? 'button' : undefined}
+      tabIndex={!activo && !inactivo ? 0 : undefined}
+      onKeyDown={
+        !activo && !inactivo
+          ? (e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onSelect();
+              }
+            }
+          : undefined
+      }
       sx={{
         flex: activo ? '2.6 1 0' : inactivo ? '0.38 1 0' : '1 1 0',
         minWidth: 0,

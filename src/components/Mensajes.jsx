@@ -55,6 +55,15 @@ function Burbuja({ msg, esPropio, primary, onBorrar }) {
         {msg.imagen && (
           <Box
             onClick={() => setLightbox(true)}
+            role="button"
+            tabIndex={0}
+            aria-label={`Ver imagen de ${nombreDe(msg.autor)}`}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                setLightbox(true);
+              }
+            }}
             sx={{ cursor: 'zoom-in', borderRadius: '12px', overflow: 'hidden', mb: msg.contenido ? 0.5 : 0 }}
           >
             <Box

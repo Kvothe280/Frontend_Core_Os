@@ -19,6 +19,15 @@ export function RecuerdoCard({ item, onEditar, onBorrar }) {
         <>
           <Box
             onClick={() => setLightboxOpen(true)}
+            role="button"
+            tabIndex={0}
+            aria-label={`Ver imagen de ${item.titulo}`}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                setLightboxOpen(true);
+              }
+            }}
             sx={{
               cursor: 'zoom-in',
               bgcolor: '#f5f0eb',
@@ -80,6 +89,19 @@ export function GaleriaCard({ item }) {
     <Card sx={{ overflow: 'hidden', border: '1px solid rgba(111,78,55,0.12)' }}>
       <Box
         onClick={() => imgSrc && !imgRota && setLightboxOpen(true)}
+        role={imgSrc && !imgRota ? 'button' : undefined}
+        tabIndex={imgSrc && !imgRota ? 0 : undefined}
+        aria-label={imgSrc && !imgRota ? `Ver imagen de ${item.titulo}` : undefined}
+        onKeyDown={
+          imgSrc && !imgRota
+            ? (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setLightboxOpen(true);
+                }
+              }
+            : undefined
+        }
         sx={{
           cursor: imgSrc && !imgRota ? 'zoom-in' : 'default',
           bgcolor: '#f5f0eb',
