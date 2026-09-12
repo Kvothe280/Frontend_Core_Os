@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTheme } from '@mui/material/styles';
+import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
@@ -57,16 +58,18 @@ function TrackCard({ entrada, nombre, acento }) {
 export default function CancionWidget({ usuario }) {
   const theme = useTheme();
   const otro = otroUsuario(usuario);
-  const { data, loading, refetch } = useApi('/api/canciones');
+  const { data, error: loadError, loading, refetch } = useApi('/api/canciones');
   const [titulo, setTitulo] = useState('');
   const [artista, setArtista] = useState('');
   const [url, setUrl] = useState('');
   const [open, setOpen] = useState(false);
   const [guardando, setGuardando] = useState(false);
+  const [guardarError, setGuardarError] = useState('');
 
   const guardar = async () => {
     if (!titulo.trim()) return;
     setGuardando(true);
+    setGuardarError('');
     try {
       await api.post('/api/canciones', { titulo, artista, url });
       refetch();
@@ -74,6 +77,8 @@ export default function CancionWidget({ usuario }) {
       setTitulo('');
       setArtista('');
       setUrl('');
+    } catch (err) {
+      setGuardarError(err.response?.data?.error || 'No se pudo guardar.');
     } finally {
       setGuardando(false);
     }
@@ -91,6 +96,12 @@ export default function CancionWidget({ usuario }) {
           {miCancion ? 'Cambiar' : 'Agregar'}
         </Button>
       </Box>
+
+      {loadError && (
+        <Alert severity="error" sx={{ mb: 1.5 }}>
+          {loadError}
+        </Alert>
+      )}
 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
         <TrackCard entrada={data?.[otro]} nombre={NOMBRES[otro]} acento={theme.palette.primary.main} />
@@ -112,6 +123,11 @@ export default function CancionWidget({ usuario }) {
             gap: 1,
           }}
         >
+          {guardarError && (
+            <Alert severity="error" sx={{ mb: 0.5 }}>
+              {guardarError}
+            </Alert>
+          )}
           <TextField size="small" label="Título" value={titulo} onChange={(e) => setTitulo(e.target.value)} fullWidth />
           <TextField
             size="small"

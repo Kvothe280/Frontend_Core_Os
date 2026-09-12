@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { api } from '../api';
@@ -10,9 +11,16 @@ export default function Boveda({ tick }) {
   const [vales, setVales] = useState([]);
   const [seleccionado, setSeleccionado] = useState(null);
   const [tickLocal, setTickLocal] = useState(0);
+  const [error, setError] = useState('');
 
   const cargar = () => {
-    api.get('/api/vales').then(({ data }) => setVales(data.vales || []));
+    api
+      .get('/api/vales')
+      .then(({ data }) => {
+        setVales(data.vales || []);
+        setError('');
+      })
+      .catch(() => setError('No se pudo cargar.'));
   };
 
   useEffect(() => {
@@ -30,6 +38,12 @@ export default function Boveda({ tick }) {
       <Typography variant="h3" sx={{ mb: 1 }}>
         Nuestros Vales
       </Typography>
+
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
 
       {/* Vale especial del mes */}
       <Box sx={{ mb: 3 }}>

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useTheme } from '@mui/material/styles';
+import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Typography from '@mui/material/Typography';
@@ -19,6 +20,14 @@ function EmojiPicker({ value, onChange }) {
         <Box
           key={e}
           onClick={() => onChange(e)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(ev) => {
+            if (ev.key === 'Enter' || ev.key === ' ') {
+              ev.preventDefault();
+              onChange(e);
+            }
+          }}
           sx={{
             fontSize: '1.5rem',
             cursor: 'pointer',
@@ -90,6 +99,7 @@ export default function MoodWidget({ usuario }) {
   const [emoji, setEmoji] = useState('');
   const [nota, setNota] = useState('');
   const [guardando, setGuardando] = useState(false);
+  const [error, setError] = useState('');
 
   const cargar = useCallback(
     () =>
@@ -101,8 +111,9 @@ export default function MoodWidget({ usuario }) {
             setEmoji(data[usuario].emoji);
             setNota(data[usuario].nota || '');
           }
+          setError('');
         })
-        .catch(() => {}),
+        .catch(() => setError('No se pudo cargar.')),
     [usuario]
   );
 
@@ -113,15 +124,25 @@ export default function MoodWidget({ usuario }) {
   const guardar = async () => {
     if (!emoji) return;
     setGuardando(true);
+    setError('');
     try {
       await api.post('/api/mood', { emoji, nota });
       await cargar();
+    } catch (err) {
+      setError(err.response?.data?.error || 'No se pudo guardar.');
     } finally {
       setGuardando(false);
     }
   };
 
   if (!mood) {
+    if (error) {
+      return (
+        <Alert severity="error" sx={{ borderRadius: 2 }}>
+          {error}
+        </Alert>
+      );
+    }
     return <Skeleton variant="rounded" height={140} sx={{ borderRadius: 2 }} />;
   }
 
@@ -130,6 +151,11 @@ export default function MoodWidget({ usuario }) {
       <Typography variant="h6" sx={{ mb: 0.5 }}>
         ¿Cómo están hoy?
       </Typography>
+      {error && (
+        <Alert severity="error" sx={{ mb: 1.5 }}>
+          {error}
+        </Alert>
+      )}
 
       {/* Estado del otro */}
       <Box sx={{ mb: 2 }}>

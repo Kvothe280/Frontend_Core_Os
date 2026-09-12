@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
@@ -12,9 +13,16 @@ export default function Recuerdos({ onChange }) {
   const [items, setItems] = useState([]);
   const [tab, setTab] = useState(0);
   const [editando, setEditando] = useState(null);
+  const [error, setError] = useState('');
 
   const cargar = () => {
-    api.get('/api/recuerdos').then(({ data }) => setItems(data));
+    api
+      .get('/api/recuerdos')
+      .then(({ data }) => {
+        setItems(data);
+        setError('');
+      })
+      .catch(() => setError('No se pudo cargar.'));
   };
 
   useEffect(() => {
@@ -22,9 +30,14 @@ export default function Recuerdos({ onChange }) {
   }, []);
 
   const borrar = async (id) => {
-    await api.delete(`/api/recuerdos/${id}`);
-    cargar();
-    onChange?.();
+    setError('');
+    try {
+      await api.delete(`/api/recuerdos/${id}`);
+      cargar();
+      onChange?.();
+    } catch (err) {
+      setError(err.response?.data?.error || 'No se pudo borrar.');
+    }
   };
 
   const alAgregar = () => {
@@ -50,6 +63,12 @@ export default function Recuerdos({ onChange }) {
       <Typography color="text.secondary" sx={{ mb: 2 }}>
         Todo lo que vivimos juntos. Si marcas "Cita" suma al contador del panel.
       </Typography>
+
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
 
       <Tabs
         value={tab}

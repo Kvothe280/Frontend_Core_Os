@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTheme } from '@mui/material/styles';
+import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Checkbox from '@mui/material/Checkbox';
@@ -15,30 +16,44 @@ import { NOMBRES } from '../constants/usuarios';
 
 export default function WishlistWidget() {
   const theme = useTheme();
-  const { data: items, loading, refetch } = useApi('/api/wishlist');
+  const { data: items, error: loadError, loading, refetch } = useApi('/api/wishlist');
   const [texto, setTexto] = useState('');
   const [guardando, setGuardando] = useState(false);
+  const [error, setError] = useState('');
 
   const agregar = async () => {
     if (!texto.trim()) return;
     setGuardando(true);
+    setError('');
     try {
       await api.post('/api/wishlist', { texto: texto.trim() });
       setTexto('');
       refetch();
+    } catch (err) {
+      setError(err.response?.data?.error || 'No se pudo guardar.');
     } finally {
       setGuardando(false);
     }
   };
 
   const toggleHecho = async (item) => {
-    await api.patch(`/api/wishlist/${item._id}`, { hecho: !item.hecho });
-    refetch();
+    setError('');
+    try {
+      await api.patch(`/api/wishlist/${item._id}`, { hecho: !item.hecho });
+      refetch();
+    } catch (err) {
+      setError(err.response?.data?.error || 'No se pudo actualizar.');
+    }
   };
 
   const eliminar = async (id) => {
-    await api.delete(`/api/wishlist/${id}`);
-    refetch();
+    setError('');
+    try {
+      await api.delete(`/api/wishlist/${id}`);
+      refetch();
+    } catch (err) {
+      setError(err.response?.data?.error || 'No se pudo borrar.');
+    }
   };
 
   if (loading) return <Skeleton variant="rounded" height={160} sx={{ borderRadius: 2 }} />;
@@ -51,6 +66,12 @@ export default function WishlistWidget() {
       <Typography variant="h6" sx={{ mb: 1.5 }}>
         Lista de deseos
       </Typography>
+
+      {(loadError || error) && (
+        <Alert severity="error" sx={{ mb: 1.5 }}>
+          {loadError || error}
+        </Alert>
+      )}
 
       {pendientes.length === 0 && hechos.length === 0 && (
         <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5, fontStyle: 'italic' }}>

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTheme } from '@mui/material/styles';
+import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
@@ -17,17 +18,22 @@ export default function Cartas({ usuario }) {
   const [activaId, setActivaId] = useState(null);
   const [formOpen, setFormOpen] = useState(false);
   const [editando, setEditando] = useState(null);
+  const [error, setError] = useState('');
   const refs = useRef({});
 
   const cargar = () => {
-    api.get('/api/cartas').then(({ data }) => {
-      const ordenadas = [...data].sort((a, b) => {
-        const fa = new Date(a.fecha || a.createdAt);
-        const fb = new Date(b.fecha || b.createdAt);
-        return fb - fa; // más reciente primero
-      });
-      setCartas(ordenadas);
-    });
+    api
+      .get('/api/cartas')
+      .then(({ data }) => {
+        const ordenadas = [...data].sort((a, b) => {
+          const fa = new Date(a.fecha || a.createdAt);
+          const fb = new Date(b.fecha || b.createdAt);
+          return fb - fa; // más reciente primero
+        });
+        setCartas(ordenadas);
+        setError('');
+      })
+      .catch(() => setError('No se pudo cargar.'));
   };
 
   useEffect(() => {
@@ -50,6 +56,12 @@ export default function Cartas({ usuario }) {
       <Typography color="text.secondary" sx={{ mb: 3 }}>
         Una por una, con cariño. Cada carta guarda quién la escribió y para quién es.
       </Typography>
+
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
 
       <Box sx={{ display: 'flex', gap: 3, alignItems: 'flex-start' }}>
         {/* ── Sidebar ── */}
@@ -86,6 +98,14 @@ export default function Cartas({ usuario }) {
                 <Card
                   key={carta._id}
                   onClick={() => irA(carta._id)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      irA(carta._id);
+                    }
+                  }}
                   sx={{
                     p: 1.5,
                     mb: 0.75,
