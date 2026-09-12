@@ -59,7 +59,7 @@ function Burbuja({ msg, esPropio, primary, onBorrar }) {
           >
             <Box
               component="img"
-              src={mediaUrl(msg.imagen)}
+              src={mediaUrl(msg.imagen, { auth: true })}
               alt={`Imagen de ${nombreDe(msg.autor)}`}
               sx={{
                 display: 'block',
@@ -86,7 +86,7 @@ function Burbuja({ msg, esPropio, primary, onBorrar }) {
           </Typography>
         )}
         <Lightbox
-          src={mediaUrl(msg.imagen)}
+          src={mediaUrl(msg.imagen, { auth: true })}
           alt={`Imagen de ${nombreDe(msg.autor)}`}
           open={lightbox}
           onClose={() => setLightbox(false)}

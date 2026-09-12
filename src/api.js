@@ -34,8 +34,15 @@ api.interceptors.response.use(
   }
 );
 
-export function mediaUrl(path) {
+export function mediaUrl(path, { auth = false } = {}) {
   if (!path) return '';
-  if (path.startsWith('http')) return path;
-  return `${API}${path}`;
+  const url = path.startsWith('http') ? path : `${API}${path}`;
+  if (!auth) return url;
+  try {
+    const token = localStorage.getItem('coreos_token');
+    if (!token) return url;
+    return `${url}${url.includes('?') ? '&' : '?'}token=${encodeURIComponent(token)}`;
+  } catch {
+    return url;
+  }
 }
