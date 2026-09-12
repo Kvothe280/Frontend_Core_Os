@@ -3,7 +3,10 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
+import IconButton from '@mui/material/IconButton';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { api } from '../api';
 
 export const SESSION_KEY = 'coreos_usuario';
@@ -107,6 +110,9 @@ export default function PanelPerfil({ config, activo, inactivo, onSelect, onAcce
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
   const [shakeTrigger, setShakeTrigger] = useState(0);
+  const [mostrar, setMostrar] = useState(false);
+  const [capsLock, setCapsLock] = useState(false);
+  const errorId = `pwd-error-${config.id}`;
 
   const fallar = () => {
     setError(true);
@@ -288,20 +294,30 @@ export default function PanelPerfil({ config, activo, inactivo, onSelect, onAcce
               />
               <input
                 autoFocus
-                type="password"
+                type={mostrar ? 'text' : 'password'}
+                name="password"
+                autoComplete="current-password"
                 placeholder="Contraseña"
                 value={clave}
                 onChange={(e) => {
                   setClave(e.target.value);
                   setError(false);
                 }}
-                onKeyDown={(e) => e.key === 'Enter' && intentar()}
+                onKeyDown={(e) => {
+                  if (e.getModifierState) setCapsLock(e.getModifierState('CapsLock'));
+                  if (e.key === 'Enter') intentar();
+                }}
+                onKeyUp={(e) => e.getModifierState && setCapsLock(e.getModifierState('CapsLock'))}
+                aria-invalid={error}
+                aria-describedby={error ? errorId : undefined}
                 className="panel-password-input"
                 style={{
                   '--focus-ring': isLuna ? 'rgba(139,92,246,0.3)' : 'rgba(251,146,60,0.35)',
+                  '--autofill-bg': isLuna ? 'rgb(40,32,72)' : 'rgb(255,247,235)',
+                  '--autofill-text': isLuna ? '#f0ecff' : '#1c0700',
                   width: '100%',
                   boxSizing: 'border-box',
-                  padding: '16px 20px 16px 50px',
+                  padding: '16px 48px 16px 50px',
                   borderRadius: 999,
                   border: error
                     ? '1.5px solid #f87171'
@@ -314,9 +330,28 @@ export default function PanelPerfil({ config, activo, inactivo, onSelect, onAcce
                   fontFamily: 'inherit',
                 }}
               />
+              <IconButton
+                onClick={() => setMostrar((m) => !m)}
+                aria-label={mostrar ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                sx={{
+                  position: 'absolute',
+                  right: 6,
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  zIndex: 1,
+                  color: isLuna ? 'rgba(224,215,248,0.55)' : 'rgba(124,45,18,0.55)',
+                }}
+              >
+                {mostrar ? <VisibilityOffIcon sx={{ fontSize: 20 }} /> : <VisibilityIcon sx={{ fontSize: 20 }} />}
+              </IconButton>
             </Box>
+            {capsLock && !error && (
+              <Typography sx={{ color: isLuna ? '#e0d7f8' : '#9a3412', fontSize: '0.72rem', mt: 0.5, textAlign: 'center' }}>
+                Bloq Mayús activado
+              </Typography>
+            )}
             {error && (
-              <Typography sx={{ color: '#f87171', fontSize: '0.72rem', mt: 0.5, textAlign: 'center' }}>
+              <Typography id={errorId} role="alert" sx={{ color: '#f87171', fontSize: '0.72rem', mt: 0.5, textAlign: 'center' }}>
                 Contraseña incorrecta
               </Typography>
             )}

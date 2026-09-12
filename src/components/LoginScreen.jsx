@@ -40,6 +40,14 @@ const LOGIN_STYLES = `
   .panel-password-input:focus {
     box-shadow: 0 0 0 4px var(--focus-ring, transparent);
   }
+  .panel-password-input:-webkit-autofill,
+  .panel-password-input:-webkit-autofill:hover,
+  .panel-password-input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px var(--autofill-bg, transparent) inset;
+    -webkit-text-fill-color: var(--autofill-text, inherit);
+    caret-color: var(--autofill-text, inherit);
+    transition: background-color 5000s ease-in-out 0s;
+  }
   @media (prefers-reduced-motion: reduce) {
     .panel-shake-wrap { animation: none !important; }
   }
