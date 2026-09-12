@@ -9,6 +9,7 @@ import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YA
 import { api, mediaUrl } from '../api';
 import CancionWidget from './CancionWidget.jsx';
 import CountdownWidget from './CountdownWidget.jsx';
+import LogrosWidget from './LogrosWidget.jsx';
 import MoodWidget from './MoodWidget.jsx';
 import ValeCard from './ValeCard.jsx';
 import ValeDrawer from './ValeDrawer.jsx';
@@ -218,6 +219,9 @@ export default function HomeDashboard({ tick, usuario, onOpenCartas, onOpenRecue
       <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, mb: 4 }}>
         <CancionWidget usuario={usuario} />
         <WishlistWidget />
+      </Box>
+      <Box sx={{ mb: 4 }}>
+        <LogrosWidget />
       </Box>
 
       {/* Vales */}
