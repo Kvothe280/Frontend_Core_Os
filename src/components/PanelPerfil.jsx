@@ -3,6 +3,7 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { api } from '../api';
 
 export const SESSION_KEY = 'coreos_usuario';
@@ -249,7 +250,7 @@ export default function PanelPerfil({ config, activo, inactivo, onSelect, onAcce
             sx={{
               width: '100%',
               mt: 0.5,
-              p: 2,
+              p: 2.5,
               borderRadius: 4,
               background: isLuna ? 'rgba(139,92,246,0.07)' : 'rgba(251,146,60,0.09)',
               border: `1px solid ${isLuna ? 'rgba(139,92,246,0.28)' : 'rgba(251,146,60,0.32)'}`,
@@ -268,7 +269,23 @@ export default function PanelPerfil({ config, activo, inactivo, onSelect, onAcce
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <Box key={shakeTrigger} className={error ? 'panel-shake-wrap' : ''} sx={{ animation: error ? 'panel-shake 0.4s ease-in-out' : 'none' }}>
+            <Box
+              key={shakeTrigger}
+              className={error ? 'panel-shake-wrap' : ''}
+              sx={{ position: 'relative', animation: error ? 'panel-shake 0.4s ease-in-out' : 'none' }}
+            >
+              <LockOutlinedIcon
+                sx={{
+                  position: 'absolute',
+                  left: 18,
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  zIndex: 1,
+                  fontSize: 20,
+                  color: isLuna ? 'rgba(224,215,248,0.55)' : 'rgba(124,45,18,0.55)',
+                  pointerEvents: 'none',
+                }}
+              />
               <input
                 autoFocus
                 type="password"
@@ -284,15 +301,15 @@ export default function PanelPerfil({ config, activo, inactivo, onSelect, onAcce
                   '--focus-ring': isLuna ? 'rgba(139,92,246,0.3)' : 'rgba(251,146,60,0.35)',
                   width: '100%',
                   boxSizing: 'border-box',
-                  padding: '12px 16px',
-                  borderRadius: 14,
+                  padding: '16px 20px 16px 50px',
+                  borderRadius: 999,
                   border: error
                     ? '1.5px solid #f87171'
                     : `1.5px solid ${isLuna ? 'rgba(200,185,255,0.35)' : 'rgba(154,52,18,0.35)'}`,
                   background: isLuna ? 'rgba(255,255,255,0.07)' : 'rgba(255,255,255,0.55)',
                   backdropFilter: 'blur(10px)',
                   color: isLuna ? '#f0ecff' : '#1c0700',
-                  fontSize: '1rem',
+                  fontSize: '1.05rem',
                   outline: 'none',
                   fontFamily: 'inherit',
                 }}
@@ -303,7 +320,7 @@ export default function PanelPerfil({ config, activo, inactivo, onSelect, onAcce
                 Contraseña incorrecta
               </Typography>
             )}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1.5 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2, mt: 1.8 }}>
               <Button
                 size="small"
                 onClick={onSelect}
@@ -328,9 +345,11 @@ export default function PanelPerfil({ config, activo, inactivo, onSelect, onAcce
                   position: 'relative',
                   overflow: 'hidden',
                   bgcolor: isLuna ? '#5b21b6' : '#c2410c',
-                  borderRadius: 2.5,
+                  borderRadius: 999,
+                  py: 1.3,
                   textTransform: 'none',
                   fontWeight: 700,
+                  fontSize: '0.95rem',
                   letterSpacing: '0.04em',
                   boxShadow: isLuna ? '0 4px 18px rgba(91,33,182,0.5)' : '0 4px 18px rgba(194,65,12,0.5)',
                   '&:hover': { bgcolor: isLuna ? '#4c1d95' : '#9a3412' },
