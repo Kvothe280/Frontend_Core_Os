@@ -27,6 +27,22 @@ const LOGIN_STYLES = `
     from{ opacity:0; transform:translateY(12px) }
     to{ opacity:1; transform:translateY(0) }
   }
+  @keyframes panel-shake {
+    0%,100%{ transform:translateX(0) }
+    20%{ transform:translateX(-6px) }
+    40%{ transform:translateX(5px) }
+    60%{ transform:translateX(-4px) }
+    80%{ transform:translateX(3px) }
+  }
+  .panel-password-input {
+    transition: box-shadow 0.25s ease, border-color 0.25s ease;
+  }
+  .panel-password-input:focus {
+    box-shadow: 0 0 0 4px var(--focus-ring, transparent);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .panel-shake-wrap { animation: none !important; }
+  }
 `;
 
 export default function LoginScreen({ onAcceso }) {

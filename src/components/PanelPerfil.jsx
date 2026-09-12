@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import { api } from '../api';
 
@@ -104,6 +105,12 @@ export default function PanelPerfil({ config, activo, inactivo, onSelect, onAcce
   const [clave, setClave] = useState('');
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [shakeTrigger, setShakeTrigger] = useState(0);
+
+  const fallar = () => {
+    setError(true);
+    setShakeTrigger((n) => n + 1);
+  };
 
   const intentar = async () => {
     if (!clave) return;
@@ -120,10 +127,10 @@ export default function PanelPerfil({ config, activo, inactivo, onSelect, onAcce
         }
         onAcceso(data.usuario);
       } else {
-        setError(true);
+        fallar();
       }
     } catch {
-      setError(true);
+      fallar();
     } finally {
       setLoading(false);
     }
@@ -239,35 +246,58 @@ export default function PanelPerfil({ config, activo, inactivo, onSelect, onAcce
 
         {activo && (
           <Box
-            sx={{ width: '100%', mt: 0.5, animation: 'form-in 0.35s ease-out' }}
+            sx={{
+              width: '100%',
+              mt: 0.5,
+              p: 2,
+              borderRadius: 4,
+              background: isLuna ? 'rgba(139,92,246,0.07)' : 'rgba(251,146,60,0.09)',
+              border: `1px solid ${isLuna ? 'rgba(139,92,246,0.28)' : 'rgba(251,146,60,0.32)'}`,
+              animation: 'form-in 0.35s ease-out, glow-pulse-panel 3.2s ease-in-out 0.35s infinite',
+              '@keyframes glow-pulse-panel': {
+                '0%,100%': {
+                  boxShadow: isLuna ? '0 0 0 0 rgba(139,92,246,0.18)' : '0 0 0 0 rgba(251,146,60,0.2)',
+                },
+                '50%': {
+                  boxShadow: isLuna ? '0 0 26px 6px rgba(139,92,246,0.22)' : '0 0 26px 6px rgba(251,146,60,0.24)',
+                },
+              },
+              '@media (prefers-reduced-motion: reduce)': {
+                animation: 'form-in 0.35s ease-out',
+              },
+            }}
             onClick={(e) => e.stopPropagation()}
           >
-            <input
-              autoFocus
-              type="password"
-              placeholder="Contraseña"
-              value={clave}
-              onChange={(e) => {
-                setClave(e.target.value);
-                setError(false);
-              }}
-              onKeyDown={(e) => e.key === 'Enter' && intentar()}
-              style={{
-                width: '100%',
-                boxSizing: 'border-box',
-                padding: '11px 16px',
-                borderRadius: 12,
-                border: error
-                  ? '1.5px solid #f87171'
-                  : `1.5px solid ${isLuna ? 'rgba(200,185,255,0.3)' : 'rgba(154,52,18,0.3)'}`,
-                background: isLuna ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.5)',
-                backdropFilter: 'blur(10px)',
-                color: isLuna ? '#f0ecff' : '#1c0700',
-                fontSize: '1rem',
-                outline: 'none',
-                fontFamily: 'inherit',
-              }}
-            />
+            <Box key={shakeTrigger} className={error ? 'panel-shake-wrap' : ''} sx={{ animation: error ? 'panel-shake 0.4s ease-in-out' : 'none' }}>
+              <input
+                autoFocus
+                type="password"
+                placeholder="Contraseña"
+                value={clave}
+                onChange={(e) => {
+                  setClave(e.target.value);
+                  setError(false);
+                }}
+                onKeyDown={(e) => e.key === 'Enter' && intentar()}
+                className="panel-password-input"
+                style={{
+                  '--focus-ring': isLuna ? 'rgba(139,92,246,0.3)' : 'rgba(251,146,60,0.35)',
+                  width: '100%',
+                  boxSizing: 'border-box',
+                  padding: '12px 16px',
+                  borderRadius: 14,
+                  border: error
+                    ? '1.5px solid #f87171'
+                    : `1.5px solid ${isLuna ? 'rgba(200,185,255,0.35)' : 'rgba(154,52,18,0.35)'}`,
+                  background: isLuna ? 'rgba(255,255,255,0.07)' : 'rgba(255,255,255,0.55)',
+                  backdropFilter: 'blur(10px)',
+                  color: isLuna ? '#f0ecff' : '#1c0700',
+                  fontSize: '1rem',
+                  outline: 'none',
+                  fontFamily: 'inherit',
+                }}
+              />
+            </Box>
             {error && (
               <Typography sx={{ color: '#f87171', fontSize: '0.72rem', mt: 0.5, textAlign: 'center' }}>
                 Contraseña incorrecta
@@ -295,6 +325,8 @@ export default function PanelPerfil({ config, activo, inactivo, onSelect, onAcce
                 onClick={intentar}
                 disabled={loading || !clave}
                 sx={{
+                  position: 'relative',
+                  overflow: 'hidden',
                   bgcolor: isLuna ? '#5b21b6' : '#c2410c',
                   borderRadius: 2.5,
                   textTransform: 'none',
@@ -303,9 +335,18 @@ export default function PanelPerfil({ config, activo, inactivo, onSelect, onAcce
                   boxShadow: isLuna ? '0 4px 18px rgba(91,33,182,0.5)' : '0 4px 18px rgba(194,65,12,0.5)',
                   '&:hover': { bgcolor: isLuna ? '#4c1d95' : '#9a3412' },
                   '&.Mui-disabled': { bgcolor: isLuna ? '#5b21b640' : '#c2410c40' },
+                  '&::after': {
+                    content: '""',
+                    position: 'absolute',
+                    inset: 0,
+                    background: 'linear-gradient(115deg, transparent 35%, rgba(255,255,255,0.35) 50%, transparent 65%)',
+                    transform: 'translateX(-100%)',
+                    transition: 'transform 0.55s ease',
+                  },
+                  '&:hover::after': { transform: 'translateX(100%)' },
                 }}
               >
-                {loading ? '···' : 'Entrar'}
+                {loading ? <CircularProgress size={16} thickness={5} sx={{ color: '#fff' }} /> : 'Entrar'}
               </Button>
             </Box>
           </Box>
