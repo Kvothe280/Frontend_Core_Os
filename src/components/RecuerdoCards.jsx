@@ -5,6 +5,7 @@ import Card from '@mui/material/Card';
 import Typography from '@mui/material/Typography';
 import { mediaUrl } from '../api';
 import { etiquetaTipo } from '../constants/recuerdoTipos';
+import { formatearFecha } from '../constants/fechaUtils';
 import Lightbox from './Lightbox.jsx';
 
 export function RecuerdoCard({ item, onEditar, onBorrar }) {
@@ -45,7 +46,7 @@ export function RecuerdoCard({ item, onEditar, onBorrar }) {
         <Typography variant="overline">{etiquetaTipo(item.tipo)}</Typography>
         <Typography variant="h6">{item.titulo}</Typography>
         <Typography variant="body2" color="text.secondary">
-          {new Date(item.fecha).toLocaleDateString('es-MX')}
+          {formatearFecha(item.fecha)}
         </Typography>
         {item.nota && (
           <Typography variant="body2" sx={{ mt: 1 }}>
@@ -123,7 +124,7 @@ export function GaleriaCard({ item }) {
         </Typography>
         <Typography variant="subtitle2">{item.titulo}</Typography>
         <Typography variant="caption" color="text.secondary">
-          {new Date(item.fecha).toLocaleDateString('es-MX')}
+          {formatearFecha(item.fecha)}
         </Typography>
         {item.nota && (
           <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, fontSize: '0.75rem' }}>

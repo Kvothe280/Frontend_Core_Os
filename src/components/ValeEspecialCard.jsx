@@ -11,6 +11,7 @@ import Typography from '@mui/material/Typography';
 import LockIcon from '@mui/icons-material/Lock';
 import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
 import { api } from '../api';
+import { formatearFecha } from '../constants/fechaUtils';
 
 const PENALIZACION_LABEL = {
   ligera: 'Penalización ligera (1–2 preguntas faltaron)',
@@ -189,11 +190,7 @@ export default function ValeEspecialCard({ onCanjeado }) {
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                   {vem.fechaCanje
-                    ? new Date(vem.fechaCanje).toLocaleDateString('es-MX', {
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric',
-                      })
+                    ? formatearFecha(vem.fechaCanje, { day: 'numeric', month: 'long', year: 'numeric' })
                     : 'Hasta el próximo mes.'}
                 </Typography>
               </Box>

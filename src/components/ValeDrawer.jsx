@@ -7,6 +7,7 @@ import Drawer from '@mui/material/Drawer';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { api, mediaUrl } from '../api';
+import { formatearFecha } from '../constants/fechaUtils';
 
 export default function ValeDrawer({ vale, open, onClose, onSuccess }) {
   const theme = useTheme();
@@ -93,11 +94,7 @@ export default function ValeDrawer({ vale, open, onClose, onSuccess }) {
                 </Typography>
                 {vale.detalles_canje?.fecha && (
                   <Typography variant="body2" color="text.secondary">
-                    {new Date(vale.detalles_canje.fecha).toLocaleDateString('es-MX', {
-                      day: 'numeric',
-                      month: 'long',
-                      year: 'numeric',
-                    })}
+                    {formatearFecha(vale.detalles_canje.fecha, { day: 'numeric', month: 'long', year: 'numeric' })}
                   </Typography>
                 )}
                 {vale.detalles_canje?.notas && (

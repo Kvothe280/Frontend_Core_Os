@@ -4,6 +4,7 @@ import Typography from '@mui/material/Typography';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import { mediaUrl } from '../api';
 import { etiquetaTipo } from '../constants/recuerdoTipos';
+import { formatearFecha } from '../constants/fechaUtils';
 import '../leafletIcons.js';
 
 const CENTRO_DEFAULT = [19.4326, -99.1332]; // CDMX
@@ -62,7 +63,7 @@ export default function MapaRecuerdos({ items }) {
                   </Typography>
                 )}
                 <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                  {etiquetaTipo(item.tipo)} · {new Date(item.fecha).toLocaleDateString('es-MX')}
+                  {etiquetaTipo(item.tipo)} · {formatearFecha(item.fecha)}
                 </Typography>
                 {item.nota && (
                   <Typography variant="caption" sx={{ display: 'block', mt: 0.5 }}>
