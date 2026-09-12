@@ -120,7 +120,7 @@ export default function PanelPerfil({ config, activo, inactivo, onSelect, onAcce
   };
 
   const intentar = async () => {
-    if (!clave) return;
+    if (!clave || loading) return;
     setLoading(true);
     setError(false);
     try {
