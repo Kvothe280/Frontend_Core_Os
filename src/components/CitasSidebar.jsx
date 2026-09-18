@@ -130,7 +130,7 @@ function CitaPendienteCard({ cita, usuario, onRefresh }) {
 
 export default function CitasSidebar({ citas, usuario, onRefresh, onProponer }) {
   return (
-    <Box sx={{ width: 300, flexShrink: 0 }}>
+    <Box sx={{ width: { xs: '100%', md: 300 }, flexShrink: 0 }}>
       <Button variant="contained" fullWidth startIcon={<EventIcon />} onClick={onProponer} sx={{ mb: 2.5 }}>
         Proponer cita
       </Button>

@@ -142,7 +142,7 @@ export default function Calendario({ usuario }) {
         Calendario
       </Typography>
 
-      <Box sx={{ display: 'flex', gap: 3, alignItems: 'flex-start' }}>
+      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3, alignItems: 'flex-start' }}>
         {/* ── Columna izquierda: grid ── */}
         <Box sx={{ flex: 1, minWidth: 0 }}>
           {/* Navegación de mes */}
